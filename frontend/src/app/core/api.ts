@@ -1,6 +1,7 @@
 import { Service, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/development';
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -11,7 +12,7 @@ export type ApiCall = {
   payload?: unknown;
 };
 
-const backendUrl = 'http://localhost:3000';
+const backendUrl = environment.backendUrl;
 
 @Service()
 export class Api {
