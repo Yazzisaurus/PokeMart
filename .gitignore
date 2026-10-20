@@ -43,3 +43,10 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment and generated Prisma client
+.env
+backend/src/generated/prisma
+dist/
+*.tsbuildinfo
+.angular/
