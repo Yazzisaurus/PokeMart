@@ -1,14 +1,17 @@
 import { Service, inject } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/development';
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+export type Query = Record<string, string | number | boolean | null | undefined>;
+
 export type ApiCall = {
   method: ApiMethod;
   path: string;
-  params?: Record<string, string | number | boolean | null | undefined>;
+  params?: Query;
+  query?: Query;
   payload?: unknown;
 };
 
@@ -28,36 +31,35 @@ export class Api {
   }
 
   request<T>(call: ApiCall): Promise<T> {
-    const headers = this.token
-      ? new HttpHeaders({ Authorization: `Bearer ${this.token}` })
-      : undefined;
-    const url = `${backendUrl}${call.path}`;
-
-    if (call.method === 'GET') {
-      return firstValueFrom(
-        this.http.get<T>(url, { headers, params: this.query(call.params) }),
-      );
+    let headers = new HttpHeaders();
+    if (this.token) {
+      headers = headers.set('Authorization', `Bearer ${this.token}`);
     }
 
     return firstValueFrom(
-      this.http.request<T>(call.method, url, {
+      this.http.request<T>(call.method, this.url(call), {
         headers,
         body: call.payload,
       }),
     );
   }
 
-  private query(params: ApiCall['params']): HttpParams | undefined {
-    if (!params) {
-      return undefined;
-    }
+  private url(call: ApiCall): string {
+    const path = call.path.replace(/:(\w+)/g, (_, key: string) => {
+      const value = call.params?.[key];
+      if (value == null) {
+        throw new Error(`Missing path parameter: ${key}`);
+      }
+      return encodeURIComponent(`${value}`);
+    });
 
-    let query = new HttpParams();
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
-        query = query.set(key, String(value));
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(call.query ?? {})) {
+      if (value != null) {
+        query.set(key, `${value}`);
       }
     }
-    return query;
+
+    return query.size ? `${backendUrl}${path}?${query}` : `${backendUrl}${path}`;
   }
 }
