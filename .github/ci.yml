@@ -1,0 +1,100 @@
+name: CI/CD
+on:   #Turns on checks and tells it when to check
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Allows read 0only access to the repository
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend   # every "run:" below happens inside frontend/
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v5
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test -- --watch=false
+
+    python:
+    name: Python (${{ matrix.project }}) - install and check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+        project: [fastapi, backend]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v5
+
+      # Looks in the folder and decides uv or pip then writes the answer to "tool".
+      - name: Work out how this folder installs packages
+        id: detect
+        run: |
+          if [ -f uv.lock ]; then
+            echo "tool=uv" >> "$GITHUB_OUTPUT"
+          elif [ -f requirements.txt ]; then
+            echo "tool=pip" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::No uv.lock or requirements.txt in ${{ matrix.project }}/ - is the folder name right?"
+            exit 1
+
+    database:
+    name: Database (Postgres + pgvector) - starts and is healthy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v5
+
+      #checking if compose file is valid,  "-q" = say nothing unless broken.
+      - name: Validate docker-compose.yml
+        run: docker compose -f docker-compose.yml config -q
+
+      - name: Start Postgres
+        run: docker compose -f docker-compose.yml up -d --wait postgres
+
+      - name: Check pgvector extension exists
+        run: |
+          docker compose -f docker-compose.yml exec -T postgres \
+            psql -U pokemart -d pokemart -tAc "SELECT extname FROM pg_extension WHERE extname = 'vector';" \
+            | grep -qx vector
+
+      - name: Show logs if something went wrong
+        if: failure()
+        run: docker compose -f docker-compose.yml logs postgres
+
+      - name: Clean up
+        if: always()
+        run: docker compose -f docker-compose.yml down -v
