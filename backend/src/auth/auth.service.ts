@@ -1,20 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { AuthPayloadDto } from "./dto/auth.dto.js";
 import { JwtService } from "@nestjs/jwt";
+import { users } from "../auth/fixtures/users.fixtures.js"
 
-type AuthInput = { username: string; email: string}
-
- //Mockup TODO:change to database schema
-const users = [{
-        username: 'Alice@alicent.com',
-        password: 'Alicent1234'
-    },
-    {
-        username: 'Bianca',
-        password: 'WeissSchnee1234'
-    }
-];
-
+type AuthInput = { username: string; email: string };
 
 @Injectable()
 export class AuthService {

@@ -11,7 +11,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
     imports: [
         PassportModule,
         JwtModule.register({
-            secret:'abc123',
+            secret:'',
             signOptions: { expiresIn: '1h'}
         }),
     ],
