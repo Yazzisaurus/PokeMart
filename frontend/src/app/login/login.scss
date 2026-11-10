@@ -1,19 +1,58 @@
-:host {
-  display: flex;
-  flex-direction: column;
+.screen {
   min-height: 100dvh;
+}
+
+.artwork,
+.divider {
+  display: none;
+}
+
+.panel {
   box-sizing: border-box;
   padding-top: calc(3.5rem + env(safe-area-inset-top, 0rem));
   padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0rem));
   padding-inline: 1.5rem;
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 28rem;
-  margin-top: 3rem;
-  margin-inline: auto;
+@media (min-width: 48rem) {
+  .screen {
+    display: grid;
+    grid-template-columns: 1fr 0.0625rem 1fr;
+    min-height: 100dvh;
+  }
+
+  .artwork {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background: #fffbf2;
+  }
+
+  .creature {
+    width: min(28rem, 88%);
+    height: auto;
+  }
+
+  .divider {
+    display: block;
+    background: var(--mat-sys-outline-variant);
+  }
+
+  .panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2.5rem;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 28rem;
+    box-sizing: border-box;
+    padding: 2.5rem 2rem 2rem;
+    background: var(--mat-sys-surface-container-lowest);
+    border: 0.0625rem solid var(--mat-sys-outline-variant);
+    border-radius: 1.5rem;
+  }
 }
