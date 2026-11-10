@@ -12,3 +12,9 @@ form {
   margin-top: 3rem;
   margin-inline: auto;
 }
+
+.hint {
+  margin-top: -1rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
