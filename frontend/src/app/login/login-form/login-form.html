@@ -1,4 +1,4 @@
-<app-auth-header title="Log in" />
+<app-auth-header [title]="signingUp() ? 'Sign up' : 'Log in'" />
 
 <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <app-text-field
@@ -11,10 +11,27 @@
   <app-text-field
     label="Password"
     type="password"
-    autocomplete="current-password"
+    [autocomplete]="signingUp() ? 'new-password' : 'current-password'"
     [control]="form.controls.password"
     [error]="passwordError()"
   />
-  <app-button type="submit">Log in</app-button>
-  <app-button appearance="text" type="button">Forgot password?</app-button>
+  @if (signingUp() && !passwordError()) {
+    <div class="hint">Use at least 8 characters</div>
+  }
+  @if (signingUp()) {
+    <app-text-field
+      label="Confirm password"
+      type="password"
+      autocomplete="new-password"
+      [control]="form.controls.confirmPassword"
+      [error]="confirmPasswordError()"
+    />
+  }
+  <app-button type="submit">{{ signingUp() ? 'Create account' : 'Log in' }}</app-button>
+  @if (!signingUp()) {
+    <app-button appearance="text" type="button">Forgot password?</app-button>
+  }
+  <app-button appearance="text" type="button" (click)="toggleMode()">
+    {{ signingUp() ? 'Already have an account? Log in' : 'Create an account' }}
+  </app-button>
 </form>
