@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  max-width: 100%;
+  // 1.75rem is a pill on the 3.5rem field. A huge radius is also used as
+  // the outline's corner width, which stretches the field off the screen.
+  --mat-form-field-outlined-container-shape: 1.75rem;
+}
+
+mat-form-field {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
