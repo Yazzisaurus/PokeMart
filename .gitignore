@@ -64,5 +64,3 @@ pnpm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
-
-.cursor/
