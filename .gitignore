@@ -2,3 +2,6 @@ node_modules/
 .env
 dist/
 *.tsbuildinfo
+backend/data/raw/
+backend/data/processed/
+backend/data/samples/tesco-real-10k.csv

@@ -57,15 +57,17 @@ export class IngestionService {
           'category',
         ]),
 
-        priceRaw: this.pick(row, [
-          'price',
-          'prices',
-        ]),
+        priceRaw:  
+	    row.price ??
+  	    row.prices ??
+  	    row['prices_(£)'] ??
+  	    null,
 
-        unitPriceRaw: this.pick(row, [
-          'unit_price',
-          'prices_unit',
-        ]),
+        unitPriceRaw: 
+	    row.unit_price ??
+  	    row.prices_unit ??
+  	    row['prices_unit_(£)'] ??
+  	    null,
 
         unitLabel: this.pick(row, [
           'unit',
