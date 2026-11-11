@@ -14,6 +14,8 @@ export class LoginForm {
   private readonly formBuilder = inject(FormBuilder);
   private readonly submitted = signal(false);
   protected readonly signingUp = signal(false);
+  protected readonly resetting = signal(false);
+  protected readonly resetSent = signal(false);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -72,12 +74,33 @@ export class LoginForm {
     return null;
   }
 
+  protected title(): string {
+    if (this.resetting()) {
+      return 'Forgot password';
+    }
+    return this.signingUp() ? 'Sign up' : 'Log in';
+  }
+
   protected toggleMode(): void {
     this.signingUp.update((signingUp) => !signingUp);
     this.submitted.set(false);
     this.form.markAsUntouched();
     this.form.controls.password.updateValueAndValidity();
     this.form.controls.confirmPassword.updateValueAndValidity();
+  }
+
+  protected showReset(): void {
+    this.resetting.set(true);
+    this.resetSent.set(false);
+    this.submitted.set(false);
+    this.form.markAsUntouched();
+  }
+
+  protected showLogin(): void {
+    this.resetting.set(false);
+    this.resetSent.set(false);
+    this.submitted.set(false);
+    this.form.markAsUntouched();
   }
 
   private validatePassword(control: AbstractControl): ValidationErrors | null {
@@ -97,5 +120,8 @@ export class LoginForm {
   protected submit(): void {
     this.submitted.set(true);
     this.form.markAllAsTouched();
+    if (this.resetting() && this.form.controls.email.valid) {
+      this.resetSent.set(true);
+    }
   }
 }
