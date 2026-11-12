@@ -69,6 +69,20 @@ export class RawSupermarketRow {
   })
   raw!: Record<string, unknown>;
 
+  @Column({
+    name: 'processed_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  processedAt!: Date | null;
+
+  @Column({
+    name: 'processing_error',
+    type: 'text',
+    nullable: true,
+  })
+  processingError!: string | null;
+
   @CreateDateColumn({
     name: 'imported_at',
     type: 'timestamptz',
