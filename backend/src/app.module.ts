@@ -13,6 +13,9 @@ import {
   NormalizationModule,
 } from './normalization/normalization.module.js';
 
+import {
+  MatchingModule,
+} from './matching/matching.module.js';
 
 @Module({
   imports: [
@@ -41,6 +44,7 @@ import {
     PricesModule,
     IngestionModule,
     NormalizationModule,
+    MatchingModule,
   ],
 
   controllers: [AppController],
