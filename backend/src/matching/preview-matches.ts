@@ -1,5 +1,11 @@
-import { NestFactory } from '@nestjs/core';
-import { DataSource, ILike, Not } from 'typeorm';
+import {
+  NestFactory,
+} from '@nestjs/core';
+
+import {
+  DataSource,
+  ILike,
+} from 'typeorm';
 
 import {
   AppModule,
@@ -53,21 +59,57 @@ async function main(): Promise<void> {
   const searchTerm =
     process.argv[2] ?? 'milk';
 
+  const perRetailerLimit =
+    Number(
+      process.argv[3] ?? '100',
+    );
+
+  const retailers = [
+    'Aldi',
+    'ASDA',
+    'Morrisons',
+    'Sainsburys',
+    'Tesco',
+  ];
+
   console.log(
-    `\nSearching real supermarket data for: "${searchTerm}"\n`,
+    `\nSearching real supermarket data for: "${searchTerm}"`,
   );
 
-  const rows =
-    await repository.find({
-      where: {
-        productName:
-          ILike(`%${searchTerm}%`),
-      },
-      take: 100,
-      order: {
-        id: 'ASC',
-      },
-    });
+  console.log(
+    `Maximum rows per retailer: ${perRetailerLimit}\n`,
+  );
+
+  const rows:
+    RawSupermarketRow[] = [];
+
+  for (const retailer of retailers) {
+    const retailerRows =
+      await repository.find({
+        where: {
+          retailer,
+          productName:
+            ILike(
+              `%${searchTerm}%`,
+            ),
+        },
+
+        order: {
+          id: 'ASC',
+        },
+
+        take:
+          perRetailerLimit,
+      });
+
+    console.log(
+      `${retailer}: ${retailerRows.length} rows`,
+    );
+
+    rows.push(
+      ...retailerRows,
+    );
+  }
 
   const prepared:
     PreparedProduct[] =
@@ -84,7 +126,9 @@ async function main(): Promise<void> {
         );
 
       return {
-        id: Number(row.id),
+        id:
+          Number(row.id),
+
         retailer:
           row.retailer,
 
@@ -94,17 +138,62 @@ async function main(): Promise<void> {
         normalizedName,
 
         category:
-          normalizer.normalizeCategory(
-            row.category,
-          ) ?? null,
+          normalizer
+            .normalizeCategory(
+              row.category,
+            ) ?? null,
 
         quantityValue:
-          quantity?.value ?? null,
+          quantity?.value ??
+          null,
 
         quantityUnit:
-          quantity?.unit ?? null,
+          quantity?.unit ??
+          null,
       };
     });
+
+  /*
+   * Remove duplicate product representations.
+   *
+   * The supermarket source is time-series data,
+   * so the same listing may occur more than once.
+   */
+  const uniqueProducts =
+    new Map<
+      string,
+      PreparedProduct
+    >();
+
+  for (const product of prepared) {
+    const key = [
+      product.retailer,
+      product.normalizedName,
+      product.category ?? '',
+      product.quantityValue ?? '',
+      product.quantityUnit ?? '',
+    ].join('|');
+
+    if (
+      !uniqueProducts.has(key)
+    ) {
+      uniqueProducts.set(
+        key,
+        product,
+      );
+    }
+  }
+
+  const products =
+    [...uniqueProducts.values()];
+
+  console.log(
+    `\nRaw search rows: ${rows.length}`,
+  );
+
+  console.log(
+    `Unique product listings: ${products.length}\n`,
+  );
 
   const results: {
     left: PreparedProduct;
@@ -112,34 +201,40 @@ async function main(): Promise<void> {
     score: number;
     method: string;
     nameScore: number;
+    jaccardScore: number;
+    editScore: number;
     categoryScore: number;
     quantityScore: number;
   }[] = [];
 
+  let comparisons = 0;
+
   for (
     let i = 0;
-    i < prepared.length;
+    i < products.length;
     i++
   ) {
     for (
       let j = i + 1;
-      j < prepared.length;
+      j < products.length;
       j++
     ) {
-
       const left =
-        prepared[i];
+        products[i];
 
       const right =
-        prepared[j];
+        products[j];
 
-      // Cross-retailer comparisons only.
+      // PokéMart only needs
+      // cross-retailer comparisons here.
       if (
         left.retailer ===
         right.retailer
       ) {
         continue;
       }
+
+      comparisons++;
 
       const result =
         matcher.compare(
@@ -177,6 +272,7 @@ async function main(): Promise<void> {
         results.push({
           left,
           right,
+
           score:
             result.score,
 
@@ -185,6 +281,12 @@ async function main(): Promise<void> {
 
           nameScore:
             result.nameScore,
+
+          jaccardScore:
+            result.jaccardScore,
+
+          editScore:
+            result.editScore,
 
           categoryScore:
             result.categoryScore,
@@ -201,13 +303,39 @@ async function main(): Promise<void> {
       b.score - a.score,
   );
 
+  const automaticCount =
+    results.filter(
+      (result) =>
+        result.method ===
+        'automatic',
+    ).length;
+
+  const reviewCount =
+    results.filter(
+      (result) =>
+        result.method ===
+        'review',
+    ).length;
+
   console.log(
-    `Found ${results.length} possible cross-retailer matches.\n`,
+    `Cross-retailer comparisons: ${comparisons}`,
+  );
+
+  console.log(
+    `Possible matches: ${results.length}`,
+  );
+
+  console.log(
+    `Automatic: ${automaticCount}`,
+  );
+
+  console.log(
+    `Review: ${reviewCount}\n`,
   );
 
   for (
     const result
-    of results.slice(0, 20)
+    of results.slice(0, 25)
   ) {
     console.log(
       '========================================',
@@ -228,7 +356,7 @@ async function main(): Promise<void> {
     );
 
     console.log(
-      'Score:',
+      'Final score:',
       result.score.toFixed(3),
     );
 
@@ -240,6 +368,16 @@ async function main(): Promise<void> {
     console.log(
       'Name:',
       result.nameScore.toFixed(3),
+    );
+
+    console.log(
+      'Jaccard:',
+      result.jaccardScore.toFixed(3),
+    );
+
+    console.log(
+      'Edit:',
+      result.editScore.toFixed(3),
     );
 
     console.log(
