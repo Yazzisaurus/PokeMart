@@ -9,6 +9,11 @@ import { ProductsModule } from './products/products.module.js';
 import { PricesModule } from './prices/prices.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
 
+import {
+  NormalizationModule,
+} from './normalization/normalization.module.js';
+
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,6 +40,7 @@ import { IngestionModule } from './ingestion/ingestion.module.js';
     ProductsModule,
     PricesModule,
     IngestionModule,
+    NormalizationModule,
   ],
 
   controllers: [AppController],
