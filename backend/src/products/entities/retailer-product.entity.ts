@@ -10,11 +10,41 @@ import {
 
 import { Retailer } from '../../retailers/entities/retailer.entity.js';
 import { PriceObservation } from '../../prices/entities/price-observation.entity.js';
+import {  CanonicalProduct, } from './canonical-product.entity.js';
 
 @Entity('retailer_products')
 export class RetailerProduct {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @ManyToOne(
+    () => CanonicalProduct,
+    (canonicalProduct) =>
+      canonicalProduct.retailerProducts,
+    {
+      nullable: true,
+      onDelete: 'SET NULL',
+    },
+  )
+  @JoinColumn({
+    name: 'canonical_product_id',
+  })
+  canonicalProduct!: CanonicalProduct | null;
+
+  @Column({
+    name: 'match_method',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
+  matchMethod!: string | null;
+
+  @Column({
+    name: 'match_confidence',
+    type: 'real',
+    nullable: true,
+  })
+  matchConfidence!: number | null;
 
   @ManyToOne(
     () => Retailer,
