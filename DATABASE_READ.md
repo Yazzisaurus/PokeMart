@@ -715,3 +715,258 @@ After the first GitHub push:
 ---
 
 _Last updated: 28 October 2026_
+
+## Current Development Status
+
+The PokéMart backend database foundation now supports ingestion, normalization, cross-retailer product modelling, and preliminary product matching using real supermarket data.
+
+### Real Supermarket Dataset Integration
+
+The development database currently contains **50,000 raw supermarket records**, using a 10,000-row sample from each of the following retailers:
+
+- Aldi
+- ASDA
+- Morrisons
+- Sainsbury's
+- Tesco
+
+The source dataset is the *Time Series UK Supermarket Data* dataset. It is being used as representative prototype data while the PokéMart system and comparison pipeline are developed.
+
+The dataset is UK-based and therefore currently uses GBP pricing. It should not be interpreted as live or current Cork supermarket pricing.
+
+The raw source files are excluded from Git because of their size.
+
+### CSV Ingestion
+
+The CSV ingestion pipeline now supports the source dataset's real column structure, including:
+
+- `names`
+- `prices_(£)`
+- `prices_unit_(£)`
+- `unit`
+- `category`
+- `own_brand`
+- `date`
+- `supermarket`
+
+All original source records are also retained in the `raw` JSONB field of `raw_supermarket_rows`.
+
+This staging approach allows source-data problems to be investigated without losing the original imported values.
+
+### Raw Data Validation
+
+The ingestion pipeline was validated across all five retailers.
+
+Current staging status:
+
+- 50,000 raw rows imported
+- 10,000 rows per retailer
+- All product prices successfully mapped
+- Two ASDA records contain missing unit prices in the original dataset
+- These missing values are intentionally preserved rather than fabricated
+
+Dates in the source dataset use `YYYYMMDD` format, for example:
+
+```text
+20240413
+```
+
+The normalization layer converts these to:
+
+```text
+2024-04-13
+```
+
+### Product Normalization
+
+A `ProductNormalizerService` has been implemented and tested.
+
+The normalization layer currently handles:
+
+- retailer-name removal
+- lowercase and punctuation normalization
+- measurement normalization
+- GBP price conversion to integer minor units
+- category normalization
+- own-brand Boolean parsing
+- `YYYYMMDD` date conversion
+- already-normalized ISO dates
+- litre-to-millilitre conversion
+- kilogram-to-gram conversion
+- explicit product counts
+- leading and trailing counts
+- multipacks such as `6x25g`
+- compact counts such as `x8` and `x30`
+
+Examples include:
+
+```text
+Tesco 200 Cotton Buds
+→ 200 cotton buds
+→ quantity: 200 count
+```
+
+```text
+Mamia Organic Oaty Bars 6x25g
+→ quantity: 150 g
+```
+
+```text
+Tassimo Hot Chocolate Pods x8
+→ quantity: 8 count
+```
+
+The normalization service currently has **11 passing automated tests**.
+
+### Canonical Product Model
+
+PokéMart now includes a `canonical_products` table.
+
+The purpose of a canonical product is to represent the shared product concept behind retailer-specific listings.
+
+For example:
+
+```text
+Tesco Whole Milk 2L
+Aldi Whole Milk 2L
+ASDA British Whole Milk 2L
+        ↓
+Canonical Product:
+Whole Milk 2L
+```
+
+The canonical product model currently stores:
+
+- `id`
+- `display_name`
+- `normalized_name`
+- `category`
+- `quantity_value`
+- `quantity_unit`
+- `created_at`
+
+`retailer_products` now additionally contains:
+
+- `canonical_product_id`
+- `match_method`
+- `match_confidence`
+
+The canonical product relationship is nullable while matching is being performed.
+
+### Cross-Retailer Product Matching
+
+A preliminary `ProductMatcherService` has been implemented.
+
+Matching currently considers:
+
+- normalized product-name similarity
+- Jaccard token similarity
+- Levenshtein edit similarity
+- category compatibility
+- quantity compatibility
+
+The current weighted score is based primarily on product-name similarity, with category and quantity information used as additional evidence.
+
+Initial matching decisions are:
+
+```text
+score >= 0.80
+→ automatic candidate
+
+score >= 0.68 and < 0.80
+→ review candidate
+
+score < 0.68
+→ treated as a new/different product
+```
+
+These thresholds are prototype values and are being evaluated against real supermarket listings rather than treated as fixed constants.
+
+The matcher has **6 passing automated tests**.
+
+### Real-Data Matching Preview
+
+A read-only matching preview has been created to evaluate the matcher against real supermarket records before canonical-product relationships are written to the database.
+
+The preview:
+
+- searches each retailer separately
+- balances the number of records sampled per retailer
+- compares only products from different retailers
+- removes duplicate time-series representations
+- reports automatic and review candidates
+- exposes Jaccard, edit-distance, category, quantity, and final scores
+
+Queries including products such as eggs, milk, bread, butter, and cola can be used to evaluate matching behaviour.
+
+Ambiguous matches are intentionally classified for review rather than automatically merged.
+
+### Staging Processing Status
+
+Two processing-control fields have been added to `raw_supermarket_rows`:
+
+```text
+processed_at
+processing_error
+```
+
+These fields allow staging records to be transformed safely while retaining information about rows that fail processing.
+
+Current status:
+
+```text
+Raw staging rows: 50,000
+Processed rows: 0
+```
+
+The staging-to-production transformation has not yet been executed.
+
+### Current Migration History
+
+Six TypeORM migrations are currently applied:
+
+```text
+1. CreateRetailers
+2. CreateRetailerProducts
+3. CreatePriceObservations
+4. CreateRawSupermarketRows
+5. CreateCanonicalProducts
+6. AddRawProcessingStatus
+```
+
+All schema changes are managed using TypeORM migrations with `synchronize: false`.
+
+### Current Data Architecture
+
+```text
+External Supermarket CSV
+          │
+          ▼
+RawSupermarketRow
+          │
+          │ normalization
+          ▼
+RetailerProduct
+          │
+          ├──────────────► PriceObservation
+          │
+          │ matching
+          ▼
+CanonicalProduct
+```
+
+The raw staging layer preserves source data, while the production layer is intended to support retailer comparison, historical pricing, product search, and basket optimization.
+
+### Next Development Phase
+
+The next major development tasks are:
+
+1. Transform staging rows into production `RetailerProduct` and `PriceObservation` records.
+2. Apply canonical-product matching to retailer products.
+3. Process the dataset incrementally and validate transformation failures.
+4. Build the product search and price-comparison API.
+5. Build the basket-comparison engine.
+6. Connect the Angular frontend to the PokéMart API.
+7. Expand from development samples to larger portions of the supermarket dataset.
+
+Last update: 11/14/2026
