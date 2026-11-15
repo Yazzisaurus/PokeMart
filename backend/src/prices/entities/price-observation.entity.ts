@@ -18,14 +18,10 @@ export class PriceObservation {
   })
   id!: string;
 
-  @ManyToOne(
-    () => RetailerProduct,
-    (product) => product.prices,
-    {
-      nullable: false,
-      onDelete: 'CASCADE',
-    },
-  )
+  @ManyToOne(() => RetailerProduct, (product) => product.prices, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'retailer_product_id',
   })

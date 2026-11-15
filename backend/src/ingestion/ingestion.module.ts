@@ -5,18 +5,10 @@ import { RawSupermarketRow } from './entities/raw-supermarket-row.entity.js';
 import { IngestionService } from './ingestion.service.js';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      RawSupermarketRow,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([RawSupermarketRow])],
 
-  providers: [
-    IngestionService,
-  ],
+  providers: [IngestionService],
 
-  exports: [
-    IngestionService,
-  ],
+  exports: [IngestionService],
 })
 export class IngestionModule {}

@@ -7,19 +7,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import {
-  RetailerProduct,
-} from './retailer-product.entity.js';
+import { RetailerProduct } from './retailer-product.entity.js';
 
 @Entity({
   name: 'canonical_products',
 })
-@Index([
-  'normalizedName',
-  'category',
-])
+@Index(['normalizedName', 'category'])
 export class CanonicalProduct {
-
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -59,11 +53,7 @@ export class CanonicalProduct {
   })
   quantityUnit!: string | null;
 
-  @OneToMany(
-    () => RetailerProduct,
-    (product) =>
-      product.canonicalProduct,
-  )
+  @OneToMany(() => RetailerProduct, (product) => product.canonicalProduct)
   retailerProducts!: RetailerProduct[];
 
   @CreateDateColumn({

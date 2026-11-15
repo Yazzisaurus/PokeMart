@@ -10,7 +10,7 @@ import {
 
 import { Retailer } from '../../retailers/entities/retailer.entity.js';
 import { PriceObservation } from '../../prices/entities/price-observation.entity.js';
-import {  CanonicalProduct, } from './canonical-product.entity.js';
+import { CanonicalProduct } from './canonical-product.entity.js';
 
 @Entity('retailer_products')
 export class RetailerProduct {
@@ -19,8 +19,7 @@ export class RetailerProduct {
 
   @ManyToOne(
     () => CanonicalProduct,
-    (canonicalProduct) =>
-      canonicalProduct.retailerProducts,
+    (canonicalProduct) => canonicalProduct.retailerProducts,
     {
       nullable: true,
       onDelete: 'SET NULL',
@@ -46,14 +45,10 @@ export class RetailerProduct {
   })
   matchConfidence!: number | null;
 
-  @ManyToOne(
-    () => Retailer,
-    (retailer) => retailer.products,
-    {
-      nullable: false,
-      onDelete: 'CASCADE',
-    },
-  )
+  @ManyToOne(() => Retailer, (retailer) => retailer.products, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'retailer_id',
   })
@@ -84,9 +79,6 @@ export class RetailerProduct {
   })
   sourceProductId?: string;
 
-  @OneToMany(
-    () => PriceObservation,
-    (price) => price.product,
-  )
+  @OneToMany(() => PriceObservation, (price) => price.product)
   prices!: Relation<PriceObservation[]>;
 }

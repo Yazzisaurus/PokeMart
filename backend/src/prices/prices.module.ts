@@ -4,10 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PriceObservation } from './entities/price-observation.entity.js';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      PriceObservation,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([PriceObservation])],
 })
 export class PricesModule {}

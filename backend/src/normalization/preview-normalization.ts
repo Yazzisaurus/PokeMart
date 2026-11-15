@@ -3,51 +3,28 @@ import { DataSource } from 'typeorm';
 
 import { AppModule } from '../app.module.js';
 
-import {
-  RawSupermarketRow,
-} from '../ingestion/entities/raw-supermarket-row.entity.js';
+import { RawSupermarketRow } from '../ingestion/entities/raw-supermarket-row.entity.js';
 
-import {
-  ProductNormalizerService,
-} from './product-normalizer.service.js';
+import { ProductNormalizerService } from './product-normalizer.service.js';
 
 async function main(): Promise<void> {
-  const app =
-    await NestFactory.createApplicationContext(
-      AppModule,
-      {
-        logger: false,
-      },
-    );
+  const app = await NestFactory.createApplicationContext(AppModule, {
+    logger: false,
+  });
 
-  const dataSource =
-    app.get(DataSource);
+  const dataSource = app.get(DataSource);
 
-  const normalizer =
-    app.get(ProductNormalizerService);
+  const normalizer = app.get(ProductNormalizerService);
 
-  const repository =
-    dataSource.getRepository(
-      RawSupermarketRow,
-    );
+  const repository = dataSource.getRepository(RawSupermarketRow);
 
-  const retailers = [
-    'Aldi',
-    'ASDA',
-    'Morrisons',
-    'Sainsburys',
-    'Tesco',
-  ];
+  const retailers = ['Aldi', 'ASDA', 'Morrisons', 'Sainsburys', 'Tesco'];
 
   for (const retailer of retailers) {
     console.log('\n');
-    console.log(
-      '========================================',
-    );
+    console.log('========================================');
     console.log(retailer);
-    console.log(
-      '========================================',
-    );
+    console.log('========================================');
 
     const rows = await repository.find({
       where: {
@@ -60,54 +37,28 @@ async function main(): Promise<void> {
     });
 
     for (const row of rows) {
-      const normalizedName =
-        normalizer.normalizeName(
-          row.productName,
-        );
+      const normalizedName = normalizer.normalizeName(row.productName);
 
-      const quantity =
-        normalizer.extractQuantity(
-          normalizedName,
-        );
+      const quantity = normalizer.extractQuantity(normalizedName);
 
       console.log({
-        originalName:
-          row.productName,
+        originalName: row.productName,
 
         normalizedName,
 
-        priceMinor:
-          normalizer.parsePriceMinor(
-            row.priceRaw,
-          ),
+        priceMinor: normalizer.parsePriceMinor(row.priceRaw),
 
-        unitPriceMinor:
-          normalizer.parsePriceMinor(
-            row.unitPriceRaw,
-          ),
+        unitPriceMinor: normalizer.parsePriceMinor(row.unitPriceRaw),
 
-        unit:
-          normalizer.normalizeUnit(
-            row.unitLabel,
-          ),
+        unit: normalizer.normalizeUnit(row.unitLabel),
 
-        category:
-          normalizer.normalizeCategory(
-            row.category,
-          ),
+        category: normalizer.normalizeCategory(row.category),
 
-        ownBrand:
-          normalizer.parseBoolean(
-            row.ownBrandRaw,
-          ),
+        ownBrand: normalizer.parseBoolean(row.ownBrandRaw),
 
-        observedDate:
-          normalizer.parseDate(
-            row.observedDateRaw,
-          ),
+        observedDate: normalizer.parseDate(row.observedDateRaw),
 
-        quantity:
-          quantity ?? null,
+        quantity: quantity ?? null,
       });
 
       console.log();
@@ -118,10 +69,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error(
-    'Normalization preview failed:',
-    error,
-  );
+  console.error('Normalization preview failed:', error);
 
   process.exit(1);
 });

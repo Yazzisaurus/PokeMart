@@ -1,152 +1,92 @@
-import {
-  ProductMatcherService,
-} from './product-matcher.service.js';
+import { ProductMatcherService } from './product-matcher.service.js';
 
-describe(
-  'ProductMatcherService',
-  () => {
+describe('ProductMatcherService', () => {
+  const service = new ProductMatcherService();
 
-    const service =
-      new ProductMatcherService();
+  it('calculates Jaccard similarity', () => {
+    const score = service.jaccardSimilarity(
+      'whole milk 2l',
+      'british whole milk 2l',
+    );
 
-    it(
-      'calculates Jaccard similarity',
-      () => {
+    expect(score).toBeGreaterThan(0.7);
+  });
 
-        const score =
-          service.jaccardSimilarity(
-            'whole milk 2l',
-            'british whole milk 2l',
-          );
+  it('gives identical names maximum edit similarity', () => {
+    expect(service.editSimilarity('whole milk 2l', 'whole milk 2l')).toBe(1);
+  });
 
-        expect(score)
-          .toBeGreaterThan(0.7);
+  it('gives matching quantities maximum similarity', () => {
+    const score = service.quantitySimilarity(
+      {
+        normalizedName: 'whole milk 2l',
+        quantityValue: 2000,
+        quantityUnit: 'ml',
+      },
+      {
+        normalizedName: 'british whole milk 2l',
+        quantityValue: 2000,
+        quantityUnit: 'ml',
       },
     );
 
-    it(
-      'gives identical names maximum edit similarity',
-      () => {
+    expect(score).toBe(1);
+  });
 
-        expect(
-          service.editSimilarity(
-            'whole milk 2l',
-            'whole milk 2l',
-          ),
-        ).toBe(1);
+  it('rejects incompatible quantity units', () => {
+    const score = service.quantitySimilarity(
+      {
+        normalizedName: 'milk',
+        quantityValue: 2000,
+        quantityUnit: 'ml',
+      },
+      {
+        normalizedName: 'milk',
+        quantityValue: 2000,
+        quantityUnit: 'g',
       },
     );
 
-    it(
-      'gives matching quantities maximum similarity',
-      () => {
+    expect(score).toBe(0);
+  });
 
-        const score =
-          service.quantitySimilarity(
-            {
-              normalizedName:
-                'whole milk 2l',
-              quantityValue: 2000,
-              quantityUnit: 'ml',
-            },
-            {
-              normalizedName:
-                'british whole milk 2l',
-              quantityValue: 2000,
-              quantityUnit: 'ml',
-            },
-          );
-
-        expect(score).toBe(1);
+  it('automatically matches very similar products', () => {
+    const result = service.compare(
+      {
+        normalizedName: 'whole milk 2l',
+        category: 'milk',
+        quantityValue: 2000,
+        quantityUnit: 'ml',
+      },
+      {
+        normalizedName: 'british whole milk 2l',
+        category: 'milk',
+        quantityValue: 2000,
+        quantityUnit: 'ml',
       },
     );
 
-    it(
-      'rejects incompatible quantity units',
-      () => {
+    expect(result.method).toBe('automatic');
 
-        const score =
-          service.quantitySimilarity(
-            {
-              normalizedName:
-                'milk',
-              quantityValue: 2000,
-              quantityUnit: 'ml',
-            },
-            {
-              normalizedName:
-                'milk',
-              quantityValue: 2000,
-              quantityUnit: 'g',
-            },
-          );
+    expect(result.score).toBeGreaterThanOrEqual(0.8);
+  });
 
-        expect(score).toBe(0);
+  it('does not match clearly different products', () => {
+    const result = service.compare(
+      {
+        normalizedName: 'whole milk 2l',
+        category: 'milk',
+        quantityValue: 2000,
+        quantityUnit: 'ml',
+      },
+      {
+        normalizedName: 'chocolate biscuits 300g',
+        category: 'biscuits',
+        quantityValue: 300,
+        quantityUnit: 'g',
       },
     );
 
-    it(
-      'automatically matches very similar products',
-      () => {
-
-        const result =
-          service.compare(
-            {
-              normalizedName:
-                'whole milk 2l',
-              category:
-                'milk',
-              quantityValue: 2000,
-              quantityUnit: 'ml',
-            },
-            {
-              normalizedName:
-                'british whole milk 2l',
-              category:
-                'milk',
-              quantityValue: 2000,
-              quantityUnit: 'ml',
-            },
-          );
-
-        expect(result.method)
-          .toBe('automatic');
-
-        expect(result.score)
-          .toBeGreaterThanOrEqual(
-            0.80,
-          );
-      },
-    );
-
-    it(
-      'does not match clearly different products',
-      () => {
-
-        const result =
-          service.compare(
-            {
-              normalizedName:
-                'whole milk 2l',
-              category:
-                'milk',
-              quantityValue: 2000,
-              quantityUnit: 'ml',
-            },
-            {
-              normalizedName:
-                'chocolate biscuits 300g',
-              category:
-                'biscuits',
-              quantityValue: 300,
-              quantityUnit: 'g',
-            },
-          );
-
-        expect(result.method)
-          .toBe('new');
-      },
-    );
-
-  },
-);
+    expect(result.method).toBe('new');
+  });
+});

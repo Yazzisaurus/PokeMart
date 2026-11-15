@@ -11,8 +11,7 @@ type CsvRow = Record<string, string>;
 export class IngestionService {
   constructor(
     @InjectRepository(RawSupermarketRow)
-    private readonly rawRepository:
-      Repository<RawSupermarketRow>,
+    private readonly rawRepository: Repository<RawSupermarketRow>,
   ) {}
 
   async importCsv(
@@ -53,34 +52,18 @@ export class IngestionService {
 
         productName,
 
-        category: this.pick(row, [
-          'category',
-        ]),
+        category: this.pick(row, ['category']),
 
-        priceRaw:  
-	    row.price ??
-  	    row.prices ??
-  	    row['prices_(£)'] ??
-  	    null,
+        priceRaw: row.price ?? row.prices ?? row['prices_(£)'] ?? null,
 
-        unitPriceRaw: 
-	    row.unit_price ??
-  	    row.prices_unit ??
-  	    row['prices_unit_(£)'] ??
-  	    null,
+        unitPriceRaw:
+          row.unit_price ?? row.prices_unit ?? row['prices_unit_(£)'] ?? null,
 
-        unitLabel: this.pick(row, [
-          'unit',
-        ]),
+        unitLabel: this.pick(row, ['unit']),
 
-        ownBrandRaw: this.pick(row, [
-          'own_brand',
-        ]),
+        ownBrandRaw: this.pick(row, ['own_brand']),
 
-        observedDateRaw: this.pick(row, [
-          'date',
-          'observed_date',
-        ]),
+        observedDateRaw: this.pick(row, ['date', 'observed_date']),
 
         raw: row,
       });
@@ -101,10 +84,7 @@ export class IngestionService {
     return imported;
   }
 
-  private pick(
-    row: CsvRow,
-    keys: string[],
-  ): string | undefined {
+  private pick(row: CsvRow, keys: string[]): string | undefined {
     for (const key of keys) {
       const value = row[key];
 

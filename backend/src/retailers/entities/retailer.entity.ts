@@ -19,9 +19,6 @@ export class Retailer {
   })
   name!: string;
 
-  @OneToMany(
-    () => RetailerProduct,
-    (product) => product.retailer,
-  )
+  @OneToMany(() => RetailerProduct, (product) => product.retailer)
   products!: Relation<RetailerProduct[]>;
 }

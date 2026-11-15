@@ -1,16 +1,10 @@
 import { Module } from '@nestjs/common';
 
-import {
-  ProductMatcherService,
-} from './product-matcher.service.js';
+import { ProductMatcherService } from './product-matcher.service.js';
 
 @Module({
-  providers: [
-    ProductMatcherService,
-  ],
+  providers: [ProductMatcherService],
 
-  exports: [
-    ProductMatcherService,
-  ],
+  exports: [ProductMatcherService],
 })
 export class MatchingModule {}
