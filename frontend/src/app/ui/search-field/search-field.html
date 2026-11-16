@@ -8,6 +8,7 @@
     enterkeyhint="search"
     autocomplete="off"
     (input)="onInput($event)"
+    (keydown.enter)="submit($event)"
   />
   @if (value()) {
     <button type="button" class="clear" aria-label="Clear search" (click)="clear()">
