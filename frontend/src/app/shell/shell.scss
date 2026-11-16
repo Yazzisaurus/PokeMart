@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100dvh;
-  background: var(--mat-sys-surface-container);
+  background: var(--mat-sys-surface);
 }
 
 .shell {
@@ -58,18 +58,26 @@
   margin-inline: 0.125rem;
 }
 
-.content {
+.body {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
 }
 
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  order: -1;
+}
+
 .content > :not(router-outlet) {
   flex: 1;
 }
 
-.tab-bar {
+.nav {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 0.0625rem solid var(--mat-sys-outline-variant);
@@ -77,7 +85,7 @@
   padding: 0.375rem 0.5rem calc(0.375rem + env(safe-area-inset-bottom, 0rem));
 }
 
-.tab {
+.item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -91,7 +99,7 @@
   text-decoration: none;
 }
 
-.tab mat-icon {
+.item mat-icon {
   width: 1.5rem;
   height: 1.5rem;
   font-size: 1.5rem;
@@ -102,11 +110,11 @@
     'opsz' 24;
 }
 
-.tab.active {
+.item.active {
   color: var(--mat-sys-on-surface);
 }
 
-.tab.active mat-icon {
+.item.active mat-icon {
   font-variation-settings:
     'FILL' 1,
     'wght' 500,
@@ -114,20 +122,46 @@
     'opsz' 24;
 }
 
-.tab:focus-visible {
+.item:focus-visible {
   outline: 0.125rem solid var(--mat-sys-on-surface);
   outline-offset: 0.125rem;
 }
 
 @media (min-width: 48rem) {
-  :host {
-    display: flex;
-    justify-content: center;
+  .top {
+    border-bottom: 0.0625rem solid var(--mat-sys-outline-variant);
+    padding-inline: 1.5rem;
   }
 
-  .shell {
-    width: 100%;
-    max-width: 26.5rem;
-    border-inline: 0.0625rem solid var(--mat-sys-outline-variant);
+  .body {
+    flex-direction: row;
+  }
+
+  .content {
+    order: 0;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 15rem;
+    flex-shrink: 0;
+    border-top: 0;
+    border-right: 0.0625rem solid var(--mat-sys-outline-variant);
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0rem));
+  }
+
+  .item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .item.active {
+    background: var(--mat-sys-surface-container);
   }
 }
