@@ -11,50 +11,52 @@
     </div>
   </header>
 
-  <main class="content">
-    <router-outlet />
-  </main>
+  <div class="body">
+    <nav class="nav" aria-label="Primary">
+      <a
+        class="item"
+        routerLink="/home"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">home</mat-icon>
+        <span class="label">Home</span>
+      </a>
+      <a
+        class="item"
+        routerLink="/search"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">search</mat-icon>
+        <span class="label">Search</span>
+      </a>
+      <a
+        class="item"
+        routerLink="/cart"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">shopping_cart</mat-icon>
+        <span class="label">Cart</span>
+      </a>
+      <a
+        class="item"
+        routerLink="/profile"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">person</mat-icon>
+        <span class="label">Profile</span>
+      </a>
+    </nav>
 
-  <nav class="tab-bar" aria-label="Primary">
-    <a
-      class="tab"
-      routerLink="/home"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      ariaCurrentWhenActive="page"
-    >
-      <mat-icon aria-hidden="true">home</mat-icon>
-      <span class="label">Home</span>
-    </a>
-    <a
-      class="tab"
-      routerLink="/search"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      ariaCurrentWhenActive="page"
-    >
-      <mat-icon aria-hidden="true">search</mat-icon>
-      <span class="label">Search</span>
-    </a>
-    <a
-      class="tab"
-      routerLink="/cart"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      ariaCurrentWhenActive="page"
-    >
-      <mat-icon aria-hidden="true">shopping_cart</mat-icon>
-      <span class="label">Cart</span>
-    </a>
-    <a
-      class="tab"
-      routerLink="/profile"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      ariaCurrentWhenActive="page"
-    >
-      <mat-icon aria-hidden="true">person</mat-icon>
-      <span class="label">Profile</span>
-    </a>
-  </nav>
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
 </div>
