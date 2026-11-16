@@ -1,13 +1,14 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { LocalGuard } from "../auth/guards/local.guard.js";
-import type { Request } from "express";
+import { RegistrationService } from "./registration.service.js";
+import { RegistrationPayloadDto } from "./dto/registration.dto.js";
 
-@Controller('regis')
+@Controller('registration')
 export class RegistrationController {
 
-    @Post('registration')
-    @UseGuards(LocalGuard)
-    registration(@Req() req: Request) {
-        return req.user
+    constructor(private registrationService: RegistrationService) {}
+
+    @Post('newuser')
+    registration(@Body() registrationDto: RegistrationPayloadDto) {
+        return this.registrationService.validateNewUser(registrationDto)
     }
 }
