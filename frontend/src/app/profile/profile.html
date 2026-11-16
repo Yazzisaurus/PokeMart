@@ -1,1 +1,40 @@
-<section class="screen" aria-label="Profile"></section>
+<section class="screen" aria-label="Profile">
+  <div class="title">Profile</div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <app-text-field label="Name" autocomplete="name" [control]="form.controls.name" />
+    <app-text-field label="Email" type="email" autocomplete="email" [control]="form.controls.email" />
+
+    @if (updated()) {
+      <div class="note">Password updated.</div>
+    }
+
+    @if (changing()) {
+      <app-text-field
+        label="Current password"
+        type="password"
+        autocomplete="current-password"
+        [control]="form.controls.currentPassword"
+        [error]="currentPasswordError()"
+      />
+      <app-text-field
+        label="New password"
+        type="password"
+        autocomplete="new-password"
+        [control]="form.controls.password"
+        [error]="passwordError()"
+      />
+      <app-text-field
+        label="Confirm new password"
+        type="password"
+        autocomplete="new-password"
+        [control]="form.controls.confirmPassword"
+        [error]="confirmPasswordError()"
+      />
+      <app-button type="submit">Update password</app-button>
+      <app-button appearance="text" type="button" (click)="cancel()">Cancel</app-button>
+    } @else {
+      <app-button appearance="text" type="button" (click)="startChange()">Change password</app-button>
+    }
+  </form>
+</section>
