@@ -1,8 +1,6 @@
-import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { AuthPayloadDto } from "./dto/auth.dto.js";
 import { AuthService } from "./auth.service.js";
-import { JwtAuthGuard } from "./guards/jwt.guard.js";
-import type { Request } from "express";
 
 @Controller('auth')
 export class AuthController {
@@ -10,8 +8,8 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post('login')
-    @UseGuards(JwtAuthGuard)
-    login(@Req() req: Request) {
-        return req.user
+    @HttpCode(HttpStatus.OK)
+    login(@Body() body: AuthPayloadDto) {
+        return this.authService.login(body);
     }
 }
