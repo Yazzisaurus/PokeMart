@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 0.375rem 0 0.875rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 999px;
+  background: var(--mat-sys-surface);
+}
+
+.field:focus-within {
+  border-color: var(--mat-sys-on-surface);
+}
+
+mat-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 1.25rem;
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
+}
+
+input::placeholder {
+  overflow: hidden;
+  color: var(--mat-sys-on-surface-variant);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.clear {
+  display: grid;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface-variant);
+  padding: 0;
+  cursor: pointer;
+}
+
+.clear mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.clear:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.125rem;
+}
