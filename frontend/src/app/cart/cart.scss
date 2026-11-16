@@ -3,8 +3,147 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+:host::-webkit-scrollbar {
+  display: none;
 }
 
 .screen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 0.5rem 1.25rem 1.5rem;
+}
+
+.heading,
+.compare-heading,
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.title {
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+}
+
+.count {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.meta {
+  flex-shrink: 0;
+}
+
+.clear {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 0;
+  cursor: pointer;
+}
+
+.clear mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.clear:focus-visible,
+.more:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.125rem;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.empty {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0 1rem;
+  border-radius: 1rem;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-title-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.more-label {
   flex: 1;
+}
+
+.more mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.compare-heading .title {
+  font: var(--mat-sys-title-medium);
+}
+
+.compare-heading .count {
+  white-space: nowrap;
+  font: var(--mat-sys-body-small);
+}
+
+.stores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding-top: 0.6rem;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.cta-label {
+  flex: 1;
+  text-align: center;
+}
+
+.cta mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+@media (min-width: 48rem) {
+  .screen {
+    padding: 1.5rem 1.75rem 2rem;
+  }
 }
