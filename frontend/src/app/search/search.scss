@@ -60,3 +60,13 @@
   color: var(--mat-sys-on-surface-variant);
   font: var(--mat-sys-body-medium);
 }
+
+@media (min-width: 48rem) {
+  .screen {
+    padding-top: 1.5rem;
+  }
+
+  .query {
+    margin-bottom: 0.5rem;
+  }
+}
