@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
+import { CartState } from '../core/cart-state';
 import { SearchQuery } from '../core/search-query';
 import { SearchField } from '../ui/search-field/search-field';
 
@@ -13,8 +14,9 @@ import { SearchField } from '../ui/search-field/search-field';
 export class Shell {
   private readonly router = inject(Router);
   private readonly searchQuery = inject(SearchQuery);
+  private readonly cart = inject(CartState);
 
-  protected readonly cartCount = signal(3);
+  protected readonly cartCount = this.cart.count;
   protected readonly query = this.searchQuery.text;
 
   protected onQuery(value: string): void {
