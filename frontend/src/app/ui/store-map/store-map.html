@@ -1,0 +1,55 @@
+<div class="map" [attr.aria-label]="'Stores near ' + city()" role="img">
+  <svg class="canvas" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="640" height="360" fill="#e7e6e3" />
+    <g fill="#deddda">
+      <rect x="28" y="28" width="70" height="42" rx="2" />
+      <rect x="112" y="36" width="54" height="36" rx="2" />
+      <rect x="250" y="24" width="86" height="40" rx="2" />
+      <rect x="430" y="40" width="64" height="34" rx="2" />
+      <rect x="520" y="22" width="78" height="48" rx="2" />
+      <rect x="48" y="210" width="90" height="46" rx="2" />
+      <rect x="188" y="236" width="72" height="40" rx="2" />
+      <rect x="360" y="248" width="100" height="44" rx="2" />
+      <rect x="500" y="220" width="80" height="52" rx="2" />
+      <rect x="300" y="96" width="48" height="28" rx="2" />
+      <rect x="560" y="120" width="52" height="30" rx="2" />
+    </g>
+    <g fill="none" stroke="#f7f6f4" stroke-linecap="square">
+      <path stroke-width="7" d="M0 70 H180 L240 110 H400 L460 70 H640" />
+      <path stroke-width="7" d="M0 250 H140 L200 210 H360 L430 260 H640" />
+      <path stroke-width="5" d="M90 0 V150 L150 210 V360" />
+      <path stroke-width="5" d="M300 0 V90 L340 140 V360" />
+      <path stroke-width="5" d="M470 0 V120 L520 170 V360" />
+      <path stroke-width="3" d="M40 120 H200 M220 180 H420 M80 300 H260 M380 200 H600" />
+      <path stroke-width="3" d="M180 40 V200 M400 80 V300 M240 160 V320" />
+    </g>
+    <path
+      d="M-20 168 C 70 150, 130 196, 210 176 S 340 132, 430 168 S 560 214, 670 176"
+      fill="none"
+      stroke="#c3d0d8"
+      stroke-width="22"
+      stroke-linecap="round"
+    />
+    <path
+      d="M-20 176 C 80 158, 140 204, 220 184 S 350 142, 440 176 S 570 222, 670 186"
+      fill="none"
+      stroke="#d7e1e7"
+      stroke-width="8"
+      stroke-linecap="round"
+    />
+  </svg>
+  <div class="city">{{ city() }}</div>
+  @for (pin of pins(); track pin.name) {
+    <div class="pin" [style.left.%]="pin.x" [style.top.%]="pin.y">
+      @if (pin.callout) {
+        <div class="callout">
+          <div class="callout-title">{{ pin.callout.title }}</div>
+          <div class="callout-price">{{ pin.callout.price }}</div>
+        </div>
+      }
+      <div class="dot"></div>
+      <div class="name">{{ pin.name }}</div>
+      <div class="distance">{{ pin.distance }}</div>
+    </div>
+  }
+</div>
