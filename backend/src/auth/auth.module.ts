@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 
 //TODO change secret
@@ -15,7 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
             signOptions: { expiresIn: '1h'}
         }),
     ],
-    providers: [AuthService, LocalStrategy, JwtStrategy],
+    providers: [AuthService, JwtStrategy],
     controllers: [AuthController]
 })
 
