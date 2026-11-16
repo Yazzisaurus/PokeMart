@@ -1,0 +1,60 @@
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <mat-icon aria-hidden="true">shopping_cart</mat-icon>
+      <div class="wordmark">PokeMart</div>
+    </div>
+    <div class="location">
+      <mat-icon aria-hidden="true">location_on</mat-icon>
+      <span class="place">Cork</span>
+      <mat-icon class="chevron" aria-hidden="true">expand_more</mat-icon>
+    </div>
+  </header>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+
+  <nav class="tab-bar" aria-label="Primary">
+    <a
+      class="tab"
+      routerLink="/home"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+    >
+      <mat-icon aria-hidden="true">home</mat-icon>
+      <span class="label">Home</span>
+    </a>
+    <a
+      class="tab"
+      routerLink="/search"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+    >
+      <mat-icon aria-hidden="true">search</mat-icon>
+      <span class="label">Search</span>
+    </a>
+    <a
+      class="tab"
+      routerLink="/cart"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+    >
+      <mat-icon aria-hidden="true">shopping_cart</mat-icon>
+      <span class="label">Cart</span>
+    </a>
+    <a
+      class="tab"
+      routerLink="/profile"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+    >
+      <mat-icon aria-hidden="true">person</mat-icon>
+      <span class="label">Profile</span>
+    </a>
+  </nav>
+</div>
