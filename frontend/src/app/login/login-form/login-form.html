@@ -36,7 +36,10 @@
         />
       }
     }
-    <app-button type="submit">
+    @if (formError()) {
+      <div class="note error">{{ formError() }}</div>
+    }
+    <app-button type="submit" [disabled]="submitting()">
       {{ resetting() ? 'Send reset link' : signingUp() ? 'Create account' : 'Log in' }}
     </app-button>
     @if (resetting()) {
