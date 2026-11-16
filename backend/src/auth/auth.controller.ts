@@ -8,13 +8,13 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post('signup')
-    signup(@Body() { username, password }: AuthPayloadDto) {
-        return this.authService.signup(username, password);
+    signup(@Body() { email, password }: AuthPayloadDto) {
+        return this.authService.signup(email, password);
     }
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    login(@Body() { username, password }: AuthPayloadDto) {
-        return this.authService.login(username, password);
+    login(@Body() { email, password }: AuthPayloadDto) {
+        return this.authService.login(email, password);
     }
 }

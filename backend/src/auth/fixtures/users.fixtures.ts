@@ -1,10 +1,10 @@
 export const users = [
   {
-    username: 'Alice@alicent.com',
+    email: 'alice@alicent.com',
     password: 'Alicent1234',
   },
   {
-    username: 'Bianca',
+    email: 'bianca@pokemart.com',
     password: 'WeissSchnee1234',
   },
 ];

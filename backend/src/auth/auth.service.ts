@@ -1,36 +1,49 @@
 import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { users } from "./fixtures/users.fixtures.js";
+import { UserRepository } from "./user.repository.js";
 
 @Injectable()
 export class AuthService {
 
-    constructor(private jwtService: JwtService) {}
+    constructor(
+        private jwtService: JwtService,
+        private users: UserRepository,
+    ) {}
 
-    signup(username: string, password: string) {
-        const normalizedUsername = username?.trim();
-        if (!normalizedUsername || !password) {
-            throw new BadRequestException('Username and password are required');
+    async signup(email: string, password: string) {
+        const normalizedEmail = this.normalizeEmail(email);
+        if (!normalizedEmail || !password) {
+            throw new BadRequestException('Email and password are required');
         }
         if (password.length < 8) {
             throw new BadRequestException('Password must be at least 8 characters');
         }
-        if (users.some((entry) => entry.username === normalizedUsername)) {
-            throw new ConflictException('Username already exists');
+
+        const existing = await this.users.findByEmail(normalizedEmail);
+        if (existing) {
+            throw new ConflictException('Email already exists');
         }
 
-        users.push({ username: normalizedUsername, password });
-        return { username: normalizedUsername };
+        const created = await this.users.create(normalizedEmail, password);
+        if (!created) {
+            throw new ConflictException('Email already exists');
+        }
+
+        return { email: created.email };
     }
 
-    login(username: string, password: string) {
-        const user = users.find((entry) => entry.username === username);
+    async login(email: string, password: string) {
+        const user = await this.users.findByEmail(this.normalizeEmail(email));
         if (!user || user.password !== password) {
             throw new UnauthorizedException();
         }
 
         return {
-            accessToken: this.jwtService.sign({ username: user.username }),
+            accessToken: this.jwtService.sign({ email: user.email }),
         };
+    }
+
+    private normalizeEmail(email: string) {
+        return email?.trim().toLowerCase();
     }
 }
