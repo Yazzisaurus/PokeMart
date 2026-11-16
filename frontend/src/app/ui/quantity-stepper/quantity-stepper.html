@@ -1,0 +1,9 @@
+<div class="stepper">
+  <button type="button" class="control" aria-label="Decrease quantity" [disabled]="value() <= min()" (click)="decrease()">
+    <mat-icon aria-hidden="true">remove</mat-icon>
+  </button>
+  <div class="value">{{ value() }}</div>
+  <button type="button" class="control" aria-label="Increase quantity" (click)="increase()">
+    <mat-icon aria-hidden="true">add</mat-icon>
+  </button>
+</div>
