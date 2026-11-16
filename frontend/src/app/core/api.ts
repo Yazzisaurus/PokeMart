@@ -1,4 +1,4 @@
-import { Service, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/development';
@@ -16,18 +16,21 @@ export type ApiCall = {
 };
 
 const backendUrl = environment.backendUrl;
+const tokenKey = 'pokemart.accessToken';
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class Api {
   private readonly http = inject(HttpClient);
-  private token: string | null = null;
+  private token = this.storedToken();
 
   setToken(token: string): void {
     this.token = token;
+    localStorage.setItem(tokenKey, token);
   }
 
   clearToken(): void {
     this.token = null;
+    localStorage.removeItem(tokenKey);
   }
 
   request<T>(call: ApiCall): Promise<T> {
@@ -61,5 +64,9 @@ export class Api {
     }
 
     return query.size ? `${backendUrl}${path}?${query}` : `${backendUrl}${path}`;
+  }
+
+  private storedToken(): string | null {
+    return localStorage.getItem(tokenKey);
   }
 }
