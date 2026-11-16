@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthHeader } from '../../ui/auth-header/auth-header';
 import { Button } from '../../ui/button/button';
 import { TextField } from '../../ui/text-field/text-field';
@@ -12,6 +13,7 @@ import { TextField } from '../../ui/text-field/text-field';
 })
 export class LoginForm {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly router = inject(Router);
   private readonly submitted = signal(false);
   protected readonly signingUp = signal(false);
   protected readonly resetting = signal(false);
@@ -120,8 +122,21 @@ export class LoginForm {
   protected submit(): void {
     this.submitted.set(true);
     this.form.markAllAsTouched();
-    if (this.resetting() && this.form.controls.email.valid) {
-      this.resetSent.set(true);
+    if (this.resetting()) {
+      if (this.form.controls.email.valid) {
+        this.resetSent.set(true);
+      }
+      return;
     }
+    if (this.canEnter()) {
+      void this.router.navigateByUrl('/home');
+    }
+  }
+
+  private canEnter(): boolean {
+    if (this.form.controls.email.invalid || this.form.controls.password.invalid) {
+      return false;
+    }
+    return !this.signingUp() || this.form.controls.confirmPassword.valid;
   }
 }
