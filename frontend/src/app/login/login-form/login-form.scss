@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  margin-top: 3rem;
+  margin-inline: auto;
+}
