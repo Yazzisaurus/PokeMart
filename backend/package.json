@@ -31,11 +31,7 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "pretest:e2e": "npm run prisma:generate",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "typeorm": "typeorm-ts-node-esm",
-    "migration:generate": "npm run typeorm -- migration:generate -d ./src/database/data-source.ts",
-    "migration:run": "npm run typeorm -- migration:run -d ./src/database/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d ./src/database/data-source.ts",
-    "migration:show": "npm run typeorm -- migration:show -d ./src/database/data-source.ts",
+    "db:migrate": "node ../migrations/run.mjs",
     "import:csv": "npm run build && node dist/ingestion/import-csv.js"
   },
   "dependencies": {

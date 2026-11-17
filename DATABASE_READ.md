@@ -51,6 +51,9 @@ PokeMart/
 ├── docker-compose.yml
 ├── .gitignore
 ├── DATABASE_READ.md
+├── migrations/
+│   ├── run.mjs
+│   └── *.sql
 ├── frontend/
 └── backend/
     ├── package.json
@@ -61,9 +64,6 @@ PokeMart/
     │       └── tesco-sample.csv
     └── src/
         ├── app.module.ts
-        ├── database/
-        │   ├── data-source.ts
-        │   └── migrations/
         ├── ingestion/
         ├── prices/
         ├── products/
@@ -204,7 +204,10 @@ DB_PORT=5432
 DB_USERNAME=pokemart
 DB_PASSWORD=pokemart
 DB_NAME=pokemart
+DATABASE_URL=postgresql://pokemart:pokemart@localhost:5432/pokemart
 ```
+
+NestJS and TypeORM read `DB_*`. The SQL migration runner and Prisma read `DATABASE_URL`.
 
 The `.env` file is ignored by Git.
 
@@ -230,7 +233,7 @@ autoLoadEntities: true,
 synchronize: false,
 ```
 
-`synchronize` is intentionally disabled so the database schema is managed through migrations.
+`synchronize` is intentionally disabled. Schema changes belong in numbered SQL files under `/migrations`, applied with `node migrations/run.mjs`.
 
 The connection was successfully tested with:
 
@@ -410,40 +413,51 @@ Raw text is preserved intentionally so unusual source values do not cause import
 
 ---
 
-# TypeORM Migrations
+# SQL Migrations
 
-The project uses a standalone TypeORM DataSource:
+Schema changes are SQL files in `/migrations`. `migrations/run.mjs` applies each unapplied file in numeric order, inside its own transaction, and records the filename in `schema_migrations`. There is no down migration. Do not edit a file after it has been applied; add a new numbered file.
 
-```text
-backend/src/database/data-source.ts
-```
-
-Migration scripts in `backend/package.json`:
-
-```json
-"typeorm": "typeorm-ts-node-esm",
-"migration:generate": "npm run typeorm -- migration:generate -d ./src/database/data-source.ts",
-"migration:run": "npm run typeorm -- migration:run -d ./src/database/data-source.ts",
-"migration:revert": "npm run typeorm -- migration:revert -d ./src/database/data-source.ts",
-"migration:show": "npm run typeorm -- migration:show -d ./src/database/data-source.ts"
-```
-
-Show migration state:
+Apply from the repo root, or from `backend` with `npm run db:migrate`:
 
 ```bash
-npm run migration:show
+node migrations/run.mjs
 ```
 
-Current migrations:
+The runner reads `DATABASE_URL` from the environment, or from `backend/.env`.
+
+Files:
 
 ```text
-[X] CreateRetailers
-[X] CreateRetailerProducts
-[X] CreatePriceObservations
-[X] CreateRawSupermarketRows
+0_add_users.sql
+1_create_retailers.sql
+2_create_retailer_products.sql
+3_create_price_observations.sql
+4_create_raw_supermarket_rows.sql
+5_create_canonical_products.sql
+6_add_raw_processing_status.sql
 ```
 
-All four migrations have been executed successfully.
+`1_create_retailers.sql` also creates the `uuid-ossp` extension, because the uuid primary keys default to `uuid_generate_v4()`.
+
+These six product files replace the old TypeORM migration classes. A fresh database can run the runner directly. A database that already has these tables from TypeORM must not run the `CREATE TABLE` statements again. After checking that the tables and columns are already present, create the runner's ledger if needed, record the files as applied, and then run the runner so only new files, such as `0_add_users.sql`, execute:
+
+```sql
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    filename text PRIMARY KEY,
+    applied_at timestamptz NOT NULL DEFAULT now()
+);
+
+INSERT INTO schema_migrations (filename) VALUES
+    ('1_create_retailers.sql'),
+    ('2_create_retailer_products.sql'),
+    ('3_create_price_observations.sql'),
+    ('4_create_raw_supermarket_rows.sql'),
+    ('5_create_canonical_products.sql'),
+    ('6_add_raw_processing_status.sql')
+ON CONFLICT DO NOTHING;
+```
+
+The old TypeORM ledger table, `migrations`, is left in place on those databases. New databases do not create it.
 
 ---
 
@@ -455,7 +469,7 @@ Verified with:
 \dt
 ```
 
-Current tables:
+Tables present at that point:
 
 ```text
 migrations
@@ -464,6 +478,8 @@ retailer_products
 price_observations
 raw_supermarket_rows
 ```
+
+Later schema added `canonical_products`, `users`, and `schema_migrations`. Databases created from the SQL files do not have the TypeORM `migrations` table.
 
 ---
 
@@ -581,7 +597,7 @@ PriceObservation
 - [x] NestJS connected to PostgreSQL
 - [x] `.env` created
 - [x] `.env` ignored by Git
-- [x] TypeORM migration configuration created
+- [x] TypeORM migration configuration created (later replaced by `/migrations` SQL files)
 - [x] `Retailer` entity created
 - [x] `CreateRetailers` migration executed
 - [x] `RetailerProduct` entity created
@@ -600,7 +616,9 @@ PriceObservation
 
 ---
 
-# Current Git Status Expected Before Commit
+# Git Status At The First Database Commit
+
+This list is the status from that commit, not the current tree. `backend/src/database/` was removed when those TypeORM migrations moved to `/migrations`.
 
 Expected intentional changes:
 
@@ -923,18 +941,18 @@ The staging-to-production transformation has not yet been executed.
 
 ### Current Migration History
 
-Six TypeORM migrations are currently applied:
+Product schema now lives in the manual SQL migrations:
 
 ```text
-1. CreateRetailers
-2. CreateRetailerProducts
-3. CreatePriceObservations
-4. CreateRawSupermarketRows
-5. CreateCanonicalProducts
-6. AddRawProcessingStatus
+1_create_retailers.sql
+2_create_retailer_products.sql
+3_create_price_observations.sql
+4_create_raw_supermarket_rows.sql
+5_create_canonical_products.sql
+6_add_raw_processing_status.sql
 ```
 
-All schema changes are managed using TypeORM migrations with `synchronize: false`.
+`0_add_users.sql` is separate and creates the auth user table. Apply everything with `node migrations/run.mjs`. TypeORM `synchronize` stays `false`. The Nest app still uses TypeORM entities at runtime.
 
 ### Current Data Architecture
 
