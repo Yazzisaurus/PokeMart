@@ -1,3 +1,5 @@
+import type { MatchMethod } from './matching.constants.js';
+
 export interface MatchableProduct {
   normalizedName: string;
   category?: string | null;
@@ -12,7 +14,7 @@ export interface ProductMatchResult {
   editScore: number;
   categoryScore: number;
   quantityScore: number;
-  method: 'automatic' | 'review' | 'new';
+  method: MatchMethod;
 }
 
 export interface PreparedProduct {

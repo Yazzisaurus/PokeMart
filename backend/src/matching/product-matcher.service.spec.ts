@@ -2,13 +2,11 @@ import { ProductMatcherService } from './product-matcher.service.js';
 
 describe('ProductMatcherService', () => {
   const service = new ProductMatcherService();
-
   it('calculates Jaccard similarity', () => {
     const score = service.jaccardSimilarity(
       'whole milk 2l',
       'british whole milk 2l',
     );
-
     expect(score).toBeGreaterThan(0.7);
   });
 
@@ -29,7 +27,6 @@ describe('ProductMatcherService', () => {
         quantityUnit: 'ml',
       },
     );
-
     expect(score).toBe(1);
   });
 
@@ -46,7 +43,6 @@ describe('ProductMatcherService', () => {
         quantityUnit: 'g',
       },
     );
-
     expect(score).toBe(0);
   });
 
@@ -65,9 +61,7 @@ describe('ProductMatcherService', () => {
         quantityUnit: 'ml',
       },
     );
-
     expect(result.method).toBe('automatic');
-
     expect(result.score).toBeGreaterThanOrEqual(0.8);
   });
 
@@ -86,7 +80,6 @@ describe('ProductMatcherService', () => {
         quantityUnit: 'g',
       },
     );
-
     expect(result.method).toBe('new');
   });
 });
