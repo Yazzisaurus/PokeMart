@@ -17,3 +17,74 @@ model User {
 
   @@map("users")
 }
+
+model Retailer {
+  id       String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name     String            @unique(map: "UQ_e2bdbb4ec59e476072ea36c5964") @db.VarChar(100)
+  products RetailerProduct[]
+
+  @@map("retailers")
+}
+
+model RetailerProduct {
+  id                 String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  sourceName         String             @map("source_name") @db.VarChar(500)
+  normalizedName     String             @map("normalized_name") @db.VarChar(500)
+  ownBrand           Boolean            @default(false) @map("own_brand")
+  sourceProductId    String?            @map("source_product_id") @db.VarChar(255)
+  retailerId         String             @map("retailer_id") @db.Uuid
+  retailer           Retailer           @relation(fields: [retailerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_5fd16daf4fe9bc45e7937fce0ea")
+  matchMethod        String?            @map("match_method") @db.VarChar(50)
+  matchConfidence    Float?             @map("match_confidence") @db.Real
+  canonicalProductId String?            @map("canonical_product_id") @db.Uuid
+  canonicalProduct   CanonicalProduct?  @relation(fields: [canonicalProductId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "FK_94cd20d81fc94068bdec7c97817")
+  prices             PriceObservation[]
+
+  @@map("retailer_products")
+}
+
+model CanonicalProduct {
+  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  displayName      String            @map("display_name") @db.VarChar(500)
+  normalizedName   String            @map("normalized_name") @db.VarChar(500)
+  category         String?           @db.VarChar(255)
+  quantityValue    Int?              @map("quantity_value")
+  quantityUnit     String?           @map("quantity_unit") @db.VarChar(20)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  retailerProducts RetailerProduct[]
+
+  @@index([normalizedName, category], map: "IDX_b964e6435ffbaf7c4c0250a65c")
+  @@map("canonical_products")
+}
+
+model PriceObservation {
+  id                BigInt          @id @default(autoincrement())
+  priceMinor        Int             @map("price_minor")
+  unitPriceMinor    Int?            @map("unit_price_minor")
+  unitLabel         String?         @map("unit_label") @db.VarChar(50)
+  currency          String          @default("GBP") @db.Char(3)
+  observedDate      DateTime        @map("observed_date") @db.Date
+  retailerProductId String          @map("retailer_product_id") @db.Uuid
+  product           RetailerProduct @relation(fields: [retailerProductId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_8c238b27662327c733c9ed120b3")
+
+  @@index([retailerProductId, observedDate], map: "IDX_24d6173dd3ea8e137a3baa6f44")
+  @@map("price_observations")
+}
+
+model RawSupermarketRow {
+  id              BigInt    @id @default(autoincrement())
+  retailer        String    @db.VarChar(100)
+  productName     String    @map("product_name")
+  category        String?   @db.VarChar(255)
+  priceRaw        String?   @map("price_raw")
+  unitPriceRaw    String?   @map("unit_price_raw")
+  unitLabel       String?   @map("unit_label") @db.VarChar(100)
+  ownBrandRaw     String?   @map("own_brand_raw") @db.VarChar(50)
+  observedDateRaw String?   @map("observed_date_raw") @db.VarChar(100)
+  raw             Json      @db.JsonB
+  importedAt      DateTime  @default(now()) @map("imported_at") @db.Timestamptz(6)
+  processedAt     DateTime? @map("processed_at") @db.Timestamptz(6)
+  processingError String?   @map("processing_error")
+
+  @@map("raw_supermarket_rows")
+}
