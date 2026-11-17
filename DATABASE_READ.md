@@ -93,25 +93,18 @@ Installed from:
 PokeMart/backend
 ```
 
-Commands:
+The backend database packages are Prisma and `pg`:
 
-```bash
-npm install @nestjs/typeorm typeorm pg @nestjs/config csv-parse
-npm install --save-dev ts-node
-npm install dotenv
-```
-
-Important packages at that point:
-
-- `@nestjs/typeorm`
-- `typeorm`
+- `@prisma/client`
+- `@prisma/adapter-pg`
+- `prisma` (dev)
 - `pg`
 - `@nestjs/config`
 - `csv-parse`
-- `ts-node`
 - `dotenv`
+- `reflect-metadata`
 
-TypeORM and `ts-node` have since been removed. The backend uses Prisma (`@prisma/client`, `@prisma/adapter-pg`, and the `prisma` CLI) with `pg`. Schema changes stay in `/migrations`.
+The first install also added TypeORM and `ts-node`. Those packages are not dependencies and must not be installed again. Schema changes stay in `/migrations`.
 
 ---
 
@@ -201,15 +194,10 @@ backend/.env
 Contents:
 
 ```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=pokemart
-DB_PASSWORD=pokemart
-DB_NAME=pokemart
 DATABASE_URL=postgresql://pokemart:pokemart@localhost:5432/pokemart
 ```
 
-Prisma and the SQL migration runner read `DATABASE_URL`. The `DB_*` variables were only used by TypeORM and are no longer read.
+Prisma and the SQL migration runner read `DATABASE_URL`. Older `.env` files may still contain `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_NAME` from TypeORM. Nothing in the backend reads them.
 
 The `.env` file is ignored by Git.
 
@@ -578,7 +566,9 @@ PriceObservation
 
 ---
 
-# Current Milestone Status
+# Original Milestone Status
+
+These items record the first database milestone. The TypeORM entities and migration classes named below were later replaced by Prisma models and the SQL files in `/migrations`.
 
 ## Completed
 
