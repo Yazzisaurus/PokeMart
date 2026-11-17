@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-export interface NormalizedQuantity {
-  value: number;
-  unit: 'g' | 'ml' | 'count';
-}
+import type { NormalizedQuantity } from './normalization.types.js';
 
 @Injectable()
 export class ProductNormalizerService {

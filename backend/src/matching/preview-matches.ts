@@ -2,30 +2,20 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from '../app.module.js';
 
-import { Prisma } from '../generated/prisma/client.js';
-
-import { PrismaService } from '../prisma/prisma.service.js';
+import { RawSupermarketRowRepository } from '../ingestion/raw-supermarket-row.repository.js';
 
 import { ProductNormalizerService } from '../normalization/product-normalizer.service.js';
 
-import { ProductMatcherService } from './product-matcher.service.js';
+import type { PreparedProduct, PreviewMatchResult } from './matching.types.js';
 
-interface PreparedProduct {
-  id: number;
-  retailer: string;
-  originalName: string;
-  normalizedName: string;
-  category: string | null;
-  quantityValue: number | null;
-  quantityUnit: string | null;
-}
+import { ProductMatcherService } from './product-matcher.service.js';
 
 async function main(): Promise<void> {
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: false,
   });
 
-  const prisma = app.get(PrismaService);
+  const rawRows = app.get(RawSupermarketRowRepository);
 
   const normalizer = app.get(ProductNormalizerService);
 
@@ -41,24 +31,16 @@ async function main(): Promise<void> {
 
   console.log(`Maximum rows per retailer: ${perRetailerLimit}\n`);
 
-  const rows: Prisma.RawSupermarketRowGetPayload<Record<string, never>>[] = [];
+  const rows: Awaited<
+    ReturnType<RawSupermarketRowRepository['findByRetailerWhereProductNameContains']>
+  > = [];
 
   for (const retailer of retailers) {
-    const retailerRows = await prisma.rawSupermarketRow.findMany({
-      where: {
-        retailer,
-        productName: {
-          contains: searchTerm,
-          mode: 'insensitive',
-        },
-      },
-
-      orderBy: {
-        id: 'asc',
-      },
-
-      take: perRetailerLimit,
-    });
+    const retailerRows = await rawRows.findByRetailerWhereProductNameContains(
+      retailer,
+      searchTerm,
+      perRetailerLimit,
+    );
 
     console.log(`${retailer}: ${retailerRows.length} rows`);
 
@@ -115,17 +97,7 @@ async function main(): Promise<void> {
 
   console.log(`Unique product listings: ${products.length}\n`);
 
-  const results: {
-    left: PreparedProduct;
-    right: PreparedProduct;
-    score: number;
-    method: string;
-    nameScore: number;
-    jaccardScore: number;
-    editScore: number;
-    categoryScore: number;
-    quantityScore: number;
-  }[] = [];
+  const results: PreviewMatchResult[] = [];
 
   let comparisons = 0;
 

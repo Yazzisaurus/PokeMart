@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from '../app.module.js';
 
-import { PrismaService } from '../prisma/prisma.service.js';
+import { RawSupermarketRowRepository } from '../ingestion/raw-supermarket-row.repository.js';
 
 import { ProductNormalizerService } from './product-normalizer.service.js';
 
@@ -11,7 +11,7 @@ async function main(): Promise<void> {
     logger: false,
   });
 
-  const prisma = app.get(PrismaService);
+  const rawRows = app.get(RawSupermarketRowRepository);
 
   const normalizer = app.get(ProductNormalizerService);
 
@@ -23,15 +23,7 @@ async function main(): Promise<void> {
     console.log(retailer);
     console.log('========================================');
 
-    const rows = await prisma.rawSupermarketRow.findMany({
-      where: {
-        retailer,
-      },
-      orderBy: {
-        id: 'asc',
-      },
-      take: 3,
-    });
+    const rows = await rawRows.findByRetailer(retailer, 3);
 
     for (const row of rows) {
       const normalizedName = normalizer.normalizeName(row.productName);

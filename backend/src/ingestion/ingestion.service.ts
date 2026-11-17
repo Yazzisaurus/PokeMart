@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { createReadStream } from 'node:fs';
 import { parse } from 'csv-parse';
-import { Prisma } from '../generated/prisma/client.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import type { RawSupermarketRowInsert } from './ingestion.types.js';
+import { RawSupermarketRowRepository } from './raw-supermarket-row.repository.js';
 
 type CsvRow = Record<string, string>;
 
 @Injectable()
 export class IngestionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly rawRows: RawSupermarketRowRepository) {}
 
   async importCsv(
     filePath: string,
@@ -23,7 +23,7 @@ export class IngestionService {
       }),
     );
 
-    const batch: Prisma.RawSupermarketRowCreateManyInput[] = [];
+    const batch: RawSupermarketRowInsert[] = [];
 
     let imported = 0;
 
@@ -66,13 +66,13 @@ export class IngestionService {
       imported++;
 
       if (batch.length >= 500) {
-        await this.prisma.rawSupermarketRow.createMany({ data: batch });
+        await this.rawRows.createMany(batch);
         batch.length = 0;
       }
     }
 
     if (batch.length > 0) {
-      await this.prisma.rawSupermarketRow.createMany({ data: batch });
+      await this.rawRows.createMany(batch);
     }
 
     return imported;

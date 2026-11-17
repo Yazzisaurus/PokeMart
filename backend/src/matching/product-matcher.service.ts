@@ -1,21 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-export interface MatchableProduct {
-  normalizedName: string;
-  category?: string | null;
-  quantityValue?: number | null;
-  quantityUnit?: string | null;
-}
-
-export interface ProductMatchResult {
-  score: number;
-  nameScore: number;
-  jaccardScore: number;
-  editScore: number;
-  categoryScore: number;
-  quantityScore: number;
-  method: 'automatic' | 'review' | 'new';
-}
+import type { MatchableProduct, ProductMatchResult } from './matching.types.js';
 
 @Injectable()
 export class ProductMatcherService {
