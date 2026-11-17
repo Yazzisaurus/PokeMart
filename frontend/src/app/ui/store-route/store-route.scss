@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.route {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.625rem;
+  align-items: center;
+}
+
+.pin {
+  width: 1.35rem;
+  height: 1.35rem;
+  font-size: 1.35rem;
+}
+
+.place {
+  font: var(--mat-sys-title-small);
+  font-weight: 700;
+}
+
+.address {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.view {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 999px;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-label-large);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.view mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.view:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.125rem;
+}

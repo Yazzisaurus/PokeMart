@@ -4,14 +4,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { AuthModule } from './auth/auth.module.js';
 import { RetailersModule } from './retailers/retailers.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { PricesModule } from './prices/prices.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
-
 import { NormalizationModule } from './normalization/normalization.module.js';
-
 import { MatchingModule } from './matching/matching.module.js';
+import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
   imports: [
@@ -35,6 +35,8 @@ import { MatchingModule } from './matching/matching.module.js';
       }),
     }),
 
+    PrismaModule,
+    AuthModule,
     RetailersModule,
     ProductsModule,
     PricesModule,

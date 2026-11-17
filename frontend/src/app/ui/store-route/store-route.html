@@ -1,0 +1,11 @@
+<div class="route">
+  <mat-icon class="pin" aria-hidden="true">location_on</mat-icon>
+  <div class="copy">
+    <div class="place">{{ name() }} – {{ distance() }}</div>
+    <div class="address">{{ address() }}</div>
+  </div>
+  <button type="button" class="view" (click)="route.emit()">
+    <mat-icon aria-hidden="true">near_me</mat-icon>
+    <span>View route</span>
+  </button>
+</div>

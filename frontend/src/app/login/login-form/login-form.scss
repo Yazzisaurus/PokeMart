@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  margin-top: 3rem;
+  margin-inline: auto;
+}
+
+.hint {
+  margin-top: -1rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.note {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.error {
+  color: var(--mat-sys-error);
+}

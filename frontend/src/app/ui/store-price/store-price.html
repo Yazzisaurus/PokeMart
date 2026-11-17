@@ -1,0 +1,10 @@
+<div class="tile" [class.cheapest]="badge()">
+  @if (badge()) {
+    <div class="badge">{{ badge() }}</div>
+  }
+  <app-store-mark class="logo" [store]="store()" />
+  <div class="total">{{ total() }}</div>
+  @if (delta()) {
+    <div class="delta">{{ delta() }}</div>
+  }
+</div>

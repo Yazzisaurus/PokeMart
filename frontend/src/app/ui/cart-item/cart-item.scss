@@ -1,0 +1,102 @@
+:host {
+  display: block;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'thumb info price'
+    'thumb stepper remove';
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface);
+}
+
+.thumb {
+  display: grid;
+  grid-area: thumb;
+  width: 4.25rem;
+  height: 4.25rem;
+  place-items: center;
+  align-self: start;
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container);
+}
+
+.art {
+  width: 2.2rem;
+  height: 2.9rem;
+}
+
+.info {
+  grid-area: info;
+  min-width: 0;
+}
+
+.name {
+  font: var(--mat-sys-title-small);
+  font-weight: 700;
+}
+
+.detail {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.best {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
+}
+
+.best mat-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.95rem;
+}
+
+.price {
+  grid-area: price;
+  align-self: start;
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.stepper {
+  grid-area: stepper;
+  justify-self: start;
+}
+
+.remove {
+  display: grid;
+  grid-area: remove;
+  justify-self: end;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 0;
+  cursor: pointer;
+}
+
+.remove mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.remove:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.125rem;
+}
