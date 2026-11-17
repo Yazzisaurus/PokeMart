@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.ai import router as ai_router
 from app.api.routes import router
 from app.core.config import settings
 from app.core.exceptions import AppError
@@ -56,3 +57,4 @@ async def unhandled_error_handler(request: Request, exc: Exception) -> JSONRespo
 
 
 app.include_router(router)
+app.include_router(ai_router)
