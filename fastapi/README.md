@@ -19,6 +19,7 @@ uv run uvicorn app.main:app --reload
 
 ```
 app/
+  ai/
   api/
   core/
   db/
