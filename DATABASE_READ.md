@@ -15,7 +15,7 @@ Angular frontend
 NestJS backend
       |
       v
-TypeORM
+Prisma
       |
       v
 PostgreSQL / pgvector
@@ -101,7 +101,7 @@ npm install --save-dev ts-node
 npm install dotenv
 ```
 
-Important packages:
+Important packages at that point:
 
 - `@nestjs/typeorm`
 - `typeorm`
@@ -110,6 +110,8 @@ Important packages:
 - `csv-parse`
 - `ts-node`
 - `dotenv`
+
+TypeORM and `ts-node` have since been removed. The backend uses Prisma (`@prisma/client`, `@prisma/adapter-pg`, and the `prisma` CLI) with `pg`. Schema changes stay in `/migrations`.
 
 ---
 
@@ -207,7 +209,7 @@ DB_NAME=pokemart
 DATABASE_URL=postgresql://pokemart:pokemart@localhost:5432/pokemart
 ```
 
-NestJS and TypeORM read `DB_*`. The SQL migration runner and Prisma read `DATABASE_URL`.
+Prisma and the SQL migration runner read `DATABASE_URL`. The `DB_*` variables were only used by TypeORM and are no longer read.
 
 The `.env` file is ignored by Git.
 
@@ -224,16 +226,7 @@ dist/
 
 ## NestJS Database Connection
 
-NestJS is configured to connect to PostgreSQL through TypeORM.
-
-Important configuration choices:
-
-```typescript
-autoLoadEntities: true,
-synchronize: false,
-```
-
-`synchronize` is intentionally disabled. Schema changes belong in numbered SQL files under `/migrations`, applied with `node migrations/run.mjs`.
+NestJS connects to PostgreSQL through Prisma. `PrismaService` reads `DATABASE_URL`. There is no schema sync from the ORM. Schema changes belong in numbered SQL files under `/migrations`, applied with `node migrations/run.mjs`.
 
 The connection was successfully tested with:
 
@@ -952,7 +945,7 @@ Product schema now lives in the manual SQL migrations:
 6_add_raw_processing_status.sql
 ```
 
-`0_add_users.sql` is separate and creates the auth user table. Apply everything with `node migrations/run.mjs`. TypeORM `synchronize` stays `false`. The Nest app still uses TypeORM entities at runtime.
+`0_add_users.sql` is separate and creates the auth user table. Apply everything with `node migrations/run.mjs`. The Nest app reads and writes through Prisma models in `backend/prisma/schema.prisma`. Services call `PrismaService` directly for now.
 
 ### Current Data Architecture
 

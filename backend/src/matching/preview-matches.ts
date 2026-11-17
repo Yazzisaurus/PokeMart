@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 
-import { DataSource, ILike } from 'typeorm';
-
 import { AppModule } from '../app.module.js';
 
-import { RawSupermarketRow } from '../ingestion/entities/raw-supermarket-row.entity.js';
+import { Prisma } from '../generated/prisma/client.js';
+
+import { PrismaService } from '../prisma/prisma.service.js';
 
 import { ProductNormalizerService } from '../normalization/product-normalizer.service.js';
 
@@ -25,13 +25,11 @@ async function main(): Promise<void> {
     logger: false,
   });
 
-  const dataSource = app.get(DataSource);
+  const prisma = app.get(PrismaService);
 
   const normalizer = app.get(ProductNormalizerService);
 
   const matcher = app.get(ProductMatcherService);
-
-  const repository = dataSource.getRepository(RawSupermarketRow);
 
   const searchTerm = process.argv[2] ?? 'milk';
 
@@ -43,17 +41,20 @@ async function main(): Promise<void> {
 
   console.log(`Maximum rows per retailer: ${perRetailerLimit}\n`);
 
-  const rows: RawSupermarketRow[] = [];
+  const rows: Prisma.RawSupermarketRowGetPayload<Record<string, never>>[] = [];
 
   for (const retailer of retailers) {
-    const retailerRows = await repository.find({
+    const retailerRows = await prisma.rawSupermarketRow.findMany({
       where: {
         retailer,
-        productName: ILike(`%${searchTerm}%`),
+        productName: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
       },
 
-      order: {
-        id: 'ASC',
+      orderBy: {
+        id: 'asc',
       },
 
       take: perRetailerLimit,
@@ -78,7 +79,7 @@ async function main(): Promise<void> {
 
       normalizedName,
 
-      category: normalizer.normalizeCategory(row.category) ?? null,
+      category: normalizer.normalizeCategory(row.category ?? undefined) ?? null,
 
       quantityValue: quantity?.value ?? null,
 

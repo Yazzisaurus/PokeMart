@@ -1,9 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { DataSource } from 'typeorm';
 
 import { AppModule } from '../app.module.js';
 
-import { RawSupermarketRow } from '../ingestion/entities/raw-supermarket-row.entity.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 import { ProductNormalizerService } from './product-normalizer.service.js';
 
@@ -12,11 +11,9 @@ async function main(): Promise<void> {
     logger: false,
   });
 
-  const dataSource = app.get(DataSource);
+  const prisma = app.get(PrismaService);
 
   const normalizer = app.get(ProductNormalizerService);
-
-  const repository = dataSource.getRepository(RawSupermarketRow);
 
   const retailers = ['Aldi', 'ASDA', 'Morrisons', 'Sainsburys', 'Tesco'];
 
@@ -26,12 +23,12 @@ async function main(): Promise<void> {
     console.log(retailer);
     console.log('========================================');
 
-    const rows = await repository.find({
+    const rows = await prisma.rawSupermarketRow.findMany({
       where: {
         retailer,
       },
-      order: {
-        id: 'ASC',
+      orderBy: {
+        id: 'asc',
       },
       take: 3,
     });
@@ -46,17 +43,17 @@ async function main(): Promise<void> {
 
         normalizedName,
 
-        priceMinor: normalizer.parsePriceMinor(row.priceRaw),
+        priceMinor: normalizer.parsePriceMinor(row.priceRaw ?? undefined),
 
-        unitPriceMinor: normalizer.parsePriceMinor(row.unitPriceRaw),
+        unitPriceMinor: normalizer.parsePriceMinor(row.unitPriceRaw ?? undefined),
 
-        unit: normalizer.normalizeUnit(row.unitLabel),
+        unit: normalizer.normalizeUnit(row.unitLabel ?? undefined),
 
-        category: normalizer.normalizeCategory(row.category),
+        category: normalizer.normalizeCategory(row.category ?? undefined),
 
-        ownBrand: normalizer.parseBoolean(row.ownBrandRaw),
+        ownBrand: normalizer.parseBoolean(row.ownBrandRaw ?? undefined),
 
-        observedDate: normalizer.parseDate(row.observedDateRaw),
+        observedDate: normalizer.parseDate(row.observedDateRaw ?? undefined),
 
         quantity: quantity ?? null,
       });

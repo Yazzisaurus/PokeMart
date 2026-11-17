@@ -1,18 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { createReadStream } from 'node:fs';
 import { parse } from 'csv-parse';
-import { Repository } from 'typeorm';
-import { RawSupermarketRow } from './entities/raw-supermarket-row.entity.js';
+import { Prisma } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 type CsvRow = Record<string, string>;
 
 @Injectable()
 export class IngestionService {
-  constructor(
-    @InjectRepository(RawSupermarketRow)
-    private readonly rawRepository: Repository<RawSupermarketRow>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async importCsv(
     filePath: string,
@@ -27,7 +23,7 @@ export class IngestionService {
       }),
     );
 
-    const batch: RawSupermarketRow[] = [];
+    const batch: Prisma.RawSupermarketRowCreateManyInput[] = [];
 
     let imported = 0;
 
@@ -47,7 +43,7 @@ export class IngestionService {
         continue;
       }
 
-      const record = this.rawRepository.create({
+      batch.push({
         retailer,
 
         productName,
@@ -67,18 +63,16 @@ export class IngestionService {
 
         raw: row,
       });
-
-      batch.push(record);
       imported++;
 
       if (batch.length >= 500) {
-        await this.rawRepository.save(batch);
+        await this.prisma.rawSupermarketRow.createMany({ data: batch });
         batch.length = 0;
       }
     }
 
     if (batch.length > 0) {
-      await this.rawRepository.save(batch);
+      await this.prisma.rawSupermarketRow.createMany({ data: batch });
     }
 
     return imported;
