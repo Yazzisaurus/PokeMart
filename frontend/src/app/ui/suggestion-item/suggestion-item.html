@@ -1,0 +1,9 @@
+<button type="button" class="row" (click)="chosen.emit()">
+  <app-store-mark class="mark" [store]="store()" />
+  <div class="copy">
+    <div class="name">{{ name() }}</div>
+    <div class="detail">{{ detail() }} · {{ storeName() }}</div>
+  </div>
+  <div class="price">{{ price() }}</div>
+  <mat-icon aria-hidden="true">chevron_right</mat-icon>
+</button>

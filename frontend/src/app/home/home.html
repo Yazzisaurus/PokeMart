@@ -1,0 +1,32 @@
+<section class="screen" aria-label="Home">
+  <div class="greeting">Shopping in Cork</div>
+
+  <app-search-field
+    class="query"
+    label="Search products"
+    placeholder="Find the cheapest groceries near you"
+    [(value)]="query"
+    (submitted)="openSearch($event)"
+  />
+
+  @if (count() > 0) {
+    <a class="cart" routerLink="/cart">
+      <div class="cart-copy">{{ itemLabel() }} · cheapest at Aldi, {{ cheapest() }}</div>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    </a>
+  }
+
+  <div class="suggestions">
+    <div class="heading">Suggestions</div>
+    @for (item of suggestions; track item.name) {
+      <app-suggestion-item
+        [name]="item.name"
+        [detail]="item.detail"
+        [price]="item.price"
+        [store]="item.store"
+        [storeName]="item.storeName"
+        (chosen)="openSearch(item.name)"
+      />
+    }
+  </div>
+</section>

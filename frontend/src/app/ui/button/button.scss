@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+button,
+a {
+  width: 100%;
+  min-height: 3.25rem;
+}
+
+:host(.text) {
+  text-align: center;
+
+  a,
+  button {
+    width: auto;
+  }
+}
+
+:host(.compact) {
+  display: inline-flex;
+  --mat-button-filled-container-height: 2.25rem;
+  --mat-button-filled-horizontal-padding: 1.125rem;
+  --mat-button-filled-container-shape: 0.75rem;
+  --mat-button-filled-label-text-size: 0.875rem;
+  --mat-button-filled-label-text-weight: 600;
+
+  button {
+    width: auto;
+    min-height: 2.25rem;
+  }
+}
