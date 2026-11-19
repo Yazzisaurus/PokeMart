@@ -1,0 +1,13 @@
+services:
+  #Adding docker file to work alongside the original docker-compose file, so that we can build the fastapi image and run it in the CI workflow.
+  fastapi:
+    build:
+      context: .
+      dockerfile: .github/docker/fast.api.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://pokemart:pokemart@postgres/pokemart
+    depends_on:
+      postgres:
+        condition: service_healthy
