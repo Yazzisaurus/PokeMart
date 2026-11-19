@@ -11,7 +11,6 @@ import { PricesModule } from './prices/prices.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
 import { NormalizationModule } from './normalization/normalization.module.js';
 import { MatchingModule } from './matching/matching.module.js';
-import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
   imports: [
@@ -35,7 +34,6 @@ import { PrismaModule } from './prisma/prisma.module.js';
       }),
     }),
 
-    PrismaModule,
     AuthModule,
     RetailersModule,
     ProductsModule,

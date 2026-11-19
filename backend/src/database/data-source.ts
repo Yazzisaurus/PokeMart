@@ -2,11 +2,12 @@ import 'dotenv/config';
 
 import { DataSource } from 'typeorm';
 
-import { Retailer } from '../retailers/entities/retailer.entity.js';
-import { RetailerProduct } from '../products/entities/retailer-product.entity.js';
-import { PriceObservation } from '../prices/entities/price-observation.entity.js';
+import { User } from '../auth/entities/user.entity.js';
 import { RawSupermarketRow } from '../ingestion/entities/raw-supermarket-row.entity.js';
+import { PriceObservation } from '../prices/entities/price-observation.entity.js';
 import { CanonicalProduct } from '../products/entities/canonical-product.entity.js';
+import { RetailerProduct } from '../products/entities/retailer-product.entity.js';
+import { Retailer } from '../retailers/entities/retailer.entity.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -24,6 +25,7 @@ export default new DataSource({
     CanonicalProduct,
     PriceObservation,
     RawSupermarketRow,
+    User,
   ],
 
   migrations: ['src/database/migrations/*{.ts,.js}'],
