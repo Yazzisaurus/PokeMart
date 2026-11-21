@@ -26,7 +26,8 @@
     "migration:revert": "npm run typeorm -- migration:revert -d ./src/database/data-source.ts",
     "migration:show": "npm run typeorm -- migration:show -d ./src/database/data-source.ts",
     "import:csv": "npm run build && node dist/ingestion/import-csv.js",
-    "transform:staging": "npm run build && node dist/ingestion/transform-staging.js"
+    "transform:staging": "npm run build && node dist/ingestion/transform-staging.js",
+    "assign:canonical": "npm run build && node dist/matching/assign-canonical.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
