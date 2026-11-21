@@ -1,34 +1,58 @@
-# PokeMart Database Development Log
+# PokéMart Database Development
 
-This file documents the ongoing database/backend work for the `feature/database` branch of PokeMart.
+This document describes the current PokéMart database/backend architecture, ingestion pipeline, product-normalization and matching logic, staging transformation process, and remaining backend development work.
 
-The current goal is to build a NestJS + PostgreSQL backend that can ingest supermarket pricing data, preserve historical prices, normalize retailer products, and eventually support grocery price comparison and basket optimization.
+PokéMart is being developed as a grocery price-comparison system capable of ingesting supermarket pricing data, preserving historical prices, matching equivalent products across retailers, comparing current prices, and eventually determining the cheapest grocery basket.
+
+_Last updated: 20 November 2026_
 
 ---
 
 ## Current Architecture
 
 ```text
-Angular frontend
-      |
-      v
-NestJS backend
-      |
-      v
+Angular Frontend
+       │
+       ▼
+NestJS Backend
+       │
+       ▼
 TypeORM
-      |
-      v
-PostgreSQL / pgvector
-      |
-      v
-Supermarket pricing data
+       │
+       ▼
+PostgreSQL + pgvector
+       │
+       ▼
+Supermarket Pricing Data
 ```
+
+The backend uses:
+
+- NestJS
+- TypeORM
+- PostgreSQL
+- pgvector
+- Docker
+- Vitest
+- csv-parse
+
+Database schema changes are managed through TypeORM migrations.
+
+```typescript
+synchronize: false
+```
+
+Automatic schema synchronization is intentionally disabled.
+
+Following backend integration work, Prisma was removed and authentication persistence was migrated onto TypeORM so that the NestJS backend uses a single ORM/database architecture.
+
+_Last updated: 19 November 2026_
 
 ---
 
-## Branch
+# Development Branch
 
-Current development branch:
+Current database development branch:
 
 ```text
 feature/database
@@ -40,163 +64,66 @@ Verify with:
 git branch --show-current
 ```
 
----
-
-## Repository Structure
-
-Relevant structure:
+The database work is currently being integrated into:
 
 ```text
-PokeMart/
-├── docker-compose.yml
-├── .gitignore
-├── DATABASE_READ.md
-├── frontend/
-└── backend/
-    ├── package.json
-    ├── package-lock.json
-    ├── .env
-    ├── data/
-    │   └── samples/
-    │       └── tesco-sample.csv
-    └── src/
-        ├── app.module.ts
-        ├── database/
-        │   ├── data-source.ts
-        │   └── migrations/
-        ├── ingestion/
-        ├── prices/
-        ├── products/
-        └── retailers/
+dev
 ```
+
+_Last updated: 20 November 2026_
 
 ---
 
-## Node.js and npm
+# PostgreSQL and Docker
 
-Node.js/npm were installed because `npm` was initially unavailable.
+The development database runs through Docker Compose.
 
-Verify:
-
-```bash
-node -v
-npm -v
-```
-
----
-
-## Backend Dependencies
-
-Installed from:
-
-```text
-PokeMart/backend
-```
-
-Commands:
-
-```bash
-npm install @nestjs/typeorm typeorm pg @nestjs/config csv-parse
-npm install --save-dev ts-node
-npm install dotenv
-```
-
-Important packages:
-
-- `@nestjs/typeorm`
-- `typeorm`
-- `pg`
-- `@nestjs/config`
-- `csv-parse`
-- `ts-node`
-- `dotenv`
-
----
-
-## npm Audit Note
-
-The backend install reported dependency vulnerabilities.
-
-Do not automatically run:
-
-```bash
-npm audit fix --force
-```
-
-because that can introduce breaking dependency changes.
-
-Safer review commands:
-
-```bash
-npm audit
-npm audit fix --dry-run
-```
-
----
-
-## PostgreSQL and Docker
-
-The repository already included:
-
-```text
-PokeMart/docker-compose.yml
-```
-
-The existing database image is:
-
-```text
-pgvector/pgvector:0.8.7-pg18
-```
-
-This provides PostgreSQL plus pgvector support.
-
-Potential future uses of pgvector:
-
-- semantic product matching
-- embedding similarity
-- fuzzy retailer-product matching
-
-Start PostgreSQL from `PokeMart/backend`:
+From `PokeMart/backend`:
 
 ```bash
 sudo docker compose -f ../docker-compose.yml up -d
 ```
 
-Check status:
+Check container status:
 
 ```bash
 sudo docker compose -f ../docker-compose.yml ps
 ```
 
-Expected status:
+The PostgreSQL container should report:
 
 ```text
 healthy
 ```
 
-Connect directly:
+Connect directly to PostgreSQL:
 
 ```bash
-sudo docker compose -f ../docker-compose.yml exec postgres   psql -U pokemart -d pokemart
+sudo docker compose -f ../docker-compose.yml exec postgres \
+  psql -U pokemart -d pokemart
 ```
 
-Exit PostgreSQL:
+Exit PostgreSQL with:
 
 ```text
 \q
 ```
 
+The PostgreSQL container and persisted database were re-verified successfully after a system restart on 20 November 2026.
+
+_Last updated: 20 November 2026_
+
 ---
 
-## Environment Variables
+# Environment Variables
 
-Created:
+The backend uses:
 
 ```text
 backend/.env
 ```
 
-Contents:
+Development database configuration:
 
 ```env
 DB_HOST=localhost
@@ -206,48 +133,13 @@ DB_PASSWORD=pokemart
 DB_NAME=pokemart
 ```
 
-The `.env` file is ignored by Git.
+The `.env` file must not be committed to Git.
 
-Current `.gitignore` includes:
-
-```text
-node_modules/
-.env
-dist/
-*.tsbuildinfo
-```
+_Last updated: 28 October 2026_
 
 ---
 
-## NestJS Database Connection
-
-NestJS is configured to connect to PostgreSQL through TypeORM.
-
-Important configuration choices:
-
-```typescript
-autoLoadEntities: true,
-synchronize: false,
-```
-
-`synchronize` is intentionally disabled so the database schema is managed through migrations.
-
-The connection was successfully tested with:
-
-```bash
-npm run start:dev
-```
-
-Successful output included:
-
-```text
-Found 0 errors.
-Nest application successfully started
-```
-
----
-
-# Database Schema
+# Database Model
 
 ## Retailer
 
@@ -272,9 +164,13 @@ retailers
 Core fields:
 
 ```text
-id   UUID PRIMARY KEY
-name VARCHAR(100) UNIQUE NOT NULL
+id
+name
 ```
+
+`name` is unique.
+
+_Last updated: 28 October 2026_
 
 ---
 
@@ -297,36 +193,30 @@ source_name
 normalized_name
 own_brand
 source_product_id
+canonical_product_id
+match_method
+match_confidence
 ```
 
 Relationship:
 
 ```text
 Retailer
-   |
-   | 1 : many
-   v
+   │
+   │ 1 : many
+   ▼
 RetailerProduct
 ```
 
-Foreign key:
+`canonical_product_id` remains nullable until canonical matching has been performed.
 
-```text
-retailer_products.retailer_id
-    -> retailers.id
-```
-
-Delete behavior:
-
-```text
-ON DELETE CASCADE
-```
+_Last updated: 14 November 2026_
 
 ---
 
 ## PriceObservation
 
-Represents one historical price observation for a retailer product.
+Represents a historical price observation for a retailer product.
 
 Table:
 
@@ -350,42 +240,32 @@ Relationship:
 
 ```text
 RetailerProduct
-   |
-   | 1 : many
-   v
+       │
+       │ 1 : many
+       ▼
 PriceObservation
 ```
 
-Foreign key:
-
-```text
-price_observations.retailer_product_id
-    -> retailer_products.id
-```
-
-Index:
-
-```text
-(retailer_product_id, observed_date)
-```
-
-Money is stored in minor units.
+Money is stored in integer minor units.
 
 Example:
 
 ```text
-£1.49 -> 149
+£1.49 → 149
+£0.40 → 40
 ```
 
-This avoids floating-point money errors.
+This avoids floating-point errors when performing basket calculations.
 
-Historical values are inserted as separate observations rather than overwritten.
+Historical observations are stored separately instead of overwriting previous prices.
+
+_Last updated: 28 October 2026_
 
 ---
 
 ## RawSupermarketRow
 
-Represents raw imported CSV data before normalization.
+Represents imported source data before production transformation.
 
 Table:
 
@@ -393,412 +273,307 @@ Table:
 raw_supermarket_rows
 ```
 
-Purpose:
+The staging table stores both extracted fields and the complete original CSV row in JSONB.
 
 ```text
 CSV
- |
- v
+ │
+ ▼
 RawSupermarketRow
- |
- +-- extracted useful fields
- |
- +-- complete original row stored in JSONB
+ │
+ ├── extracted fields
+ │
+ └── original JSONB source row
 ```
 
-Raw text is preserved intentionally so unusual source values do not cause import failures or data loss.
+Important staging fields include:
+
+```text
+retailer
+product_name
+category
+price_raw
+unit_price_raw
+unit_label
+own_brand_raw
+observed_date_raw
+raw
+imported_at
+processed_at
+processing_error
+```
+
+Preserving the raw source data allows source-data problems to be investigated without losing the original values.
+
+The `processed_at` and `processing_error` fields were added to support safe incremental staging transformation.
+
+_Last updated: 14 November 2026_
 
 ---
 
-# TypeORM Migrations
+## CanonicalProduct
 
-The project uses a standalone TypeORM DataSource:
+Represents a shared product concept that can be linked to equivalent retailer-specific listings.
+
+Table:
 
 ```text
-backend/src/database/data-source.ts
+canonical_products
 ```
 
-Migration scripts in `backend/package.json`:
+Core fields:
 
-```json
-"typeorm": "typeorm-ts-node-esm",
-"migration:generate": "npm run typeorm -- migration:generate -d ./src/database/data-source.ts",
-"migration:run": "npm run typeorm -- migration:run -d ./src/database/data-source.ts",
-"migration:revert": "npm run typeorm -- migration:revert -d ./src/database/data-source.ts",
-"migration:show": "npm run typeorm -- migration:show -d ./src/database/data-source.ts"
+```text
+id
+display_name
+normalized_name
+category
+quantity_value
+quantity_unit
+created_at
 ```
 
-Show migration state:
+Conceptually:
+
+```text
+Tesco Whole Milk 2L
+Aldi Whole Milk 2L
+ASDA British Whole Milk 2L
+        │
+        ▼
+CanonicalProduct
+Whole Milk 2L
+```
+
+Canonical relationships will allow PokéMart to compare equivalent products across retailers.
+
+_Last updated: 14 November 2026_
+
+---
+
+# Current TypeORM Migrations
+
+Six TypeORM migrations are currently applied:
+
+```text
+1. CreateRetailers
+2. CreateRetailerProducts
+3. CreatePriceObservations
+4. CreateRawSupermarketRows
+5. CreateCanonicalProducts
+6. AddRawProcessingStatus
+```
+
+Check migration status:
 
 ```bash
+cd backend
 npm run migration:show
 ```
 
-Current migrations:
+All six should show:
 
 ```text
-[X] CreateRetailers
-[X] CreateRetailerProducts
-[X] CreatePriceObservations
-[X] CreateRawSupermarketRows
+[X]
 ```
 
-All four migrations have been executed successfully.
+Migration commands:
+
+```bash
+npm run migration:show
+npm run migration:run
+npm run migration:revert
+```
+
+All six migrations were re-verified as applied on 20 November 2026.
+
+_Last updated: 20 November 2026_
 
 ---
 
-# Current PostgreSQL Tables
+# Authentication ORM Consolidation
 
-Verified with:
+Authentication had been introduced using Prisma while the existing database architecture was already based on TypeORM.
 
-```sql
-\dt
-```
+The duplicate persistence approaches were consolidated so that the NestJS backend now uses TypeORM consistently.
 
-Current tables:
+The consolidation included:
+
+- adding a TypeORM `User` entity
+- registering `User` through `TypeOrmModule`
+- migrating `UserRepository` from Prisma to TypeORM
+- preserving the existing authentication/JWT logic
+- removing `PrismaModule`
+- removing `PrismaService`
+- removing the Prisma schema and configuration
+- removing generated Prisma client code
+- removing Prisma npm dependencies
+- removing automatic Prisma generation hooks
+
+The resulting backend passed:
 
 ```text
-migrations
-retailers
-retailer_products
-price_observations
-raw_supermarket_rows
+Nest build
+0 lint warnings
+0 lint errors
+18 / 18 automated tests
 ```
+
+_Last updated: 19 November 2026_
+
+---
+
+# Supermarket Dataset
+
+PokéMart currently uses development data from the:
+
+```text
+Time Series UK Supermarket Data
+```
+
+dataset.
+
+The development database contains:
+
+```text
+50,000 raw supermarket rows
+```
+
+with:
+
+```text
+10,000 Aldi
+10,000 ASDA
+10,000 Morrisons
+10,000 Sainsbury's
+10,000 Tesco
+```
+
+The dataset is UK-based and therefore currently uses GBP pricing.
+
+It is representative development data and should not be interpreted as live Irish supermarket pricing.
+
+Large raw source files are excluded from Git.
+
+_Last updated: 14 November 2026_
 
 ---
 
 # CSV Ingestion
 
-The ingestion pipeline currently uses:
+The ingestion pipeline supports the source dataset's real column names:
 
 ```text
-backend/src/ingestion/
+names
+prices_(£)
+prices_unit_(£)
+unit
+category
+own_brand
+date
+supermarket
 ```
 
-Main components:
+Relevant backend components:
 
 ```text
-IngestionModule
-IngestionService
-RawSupermarketRow
-import-csv.ts
+src/ingestion/
+├── entities/
+│   └── raw-supermarket-row.entity.ts
+├── ingestion.module.ts
+├── ingestion.service.ts
+└── import-csv.ts
 ```
 
-The CSV command builds the NestJS project and executes the compiled importer.
+The importer stores:
+
+- extracted values
+- retailer
+- product name
+- raw price
+- unit price
+- unit
+- category
+- own-brand value
+- source date
+- complete source record as JSONB
+
+Example import:
+
+```bash
+npm run import:csv -- ./data/raw/All_Data_Tesco.csv Tesco 10000
+```
+
+_Last updated: 14 November 2026_
+
+---
+
+# Raw Data Validation
+
+The ingestion pipeline has been validated across all five retailers.
+
+Current raw dataset:
+
+```text
+50,000 rows
+```
+
+All product prices were successfully mapped.
+
+Two ASDA records have missing unit-price values in the original source dataset.
+
+These missing values are intentionally preserved rather than fabricated.
+
+Source dates use:
+
+```text
+YYYYMMDD
+```
 
 Example:
-
-```bash
-npm run import:csv -- ./data/samples/tesco-sample.csv Tesco 10
-```
-
-Successful result:
-
-```text
-Imported 3 raw rows for Tesco.
-```
-
----
-
-## Sample Tesco Data
-
-Current sample file:
-
-```text
-backend/data/samples/tesco-sample.csv
-```
-
-Rows:
-
-```text
-Tesco Whole Milk 2L
-Coca Cola Zero 2L
-Tesco White Bread 800g
-```
-
-The rows were successfully imported and verified in PostgreSQL.
-
-Verification query:
-
-```sql
-SELECT
-    id,
-    retailer,
-    product_name,
-    price_raw,
-    unit_price_raw,
-    category,
-    observed_date_raw
-FROM raw_supermarket_rows
-ORDER BY id;
-```
-
-Result:
-
-```text
-3 rows
-```
-
-The complete original source row is also preserved as JSONB.
-
----
-
-# Current Data Flow
-
-```text
-Supermarket CSV
-      |
-      v
-NestJS import command
-      |
-      v
-IngestionService
-      |
-      v
-raw_supermarket_rows
-      |
-      v
-Future normalization pipeline
-      |
-      v
-RetailerProduct
-      |
-      v
-PriceObservation
-```
-
----
-
-# Current Milestone Status
-
-## Completed
-
-- [x] Node.js/npm installed
-- [x] Backend NestJS dependencies installed
-- [x] Docker installed
-- [x] PostgreSQL container started
-- [x] PostgreSQL health verified
-- [x] NestJS connected to PostgreSQL
-- [x] `.env` created
-- [x] `.env` ignored by Git
-- [x] TypeORM migration configuration created
-- [x] `Retailer` entity created
-- [x] `CreateRetailers` migration executed
-- [x] `RetailerProduct` entity created
-- [x] `CreateRetailerProducts` migration executed
-- [x] `PriceObservation` entity created
-- [x] `CreatePriceObservations` migration executed
-- [x] `RawSupermarketRow` entity created
-- [x] raw supermarket staging migration executed
-- [x] CSV ingestion service created
-- [x] CSV import CLI created
-- [x] sample Tesco CSV created
-- [x] sample CSV imported successfully
-- [x] imported rows verified in PostgreSQL
-- [x] root-level accidental npm files cleaned up
-- [x] generated/local files added to `.gitignore`
-
----
-
-# Current Git Status Expected Before Commit
-
-Expected intentional changes:
-
-```text
-M  .gitignore
-M  backend/package-lock.json
-M  backend/package.json
-M  backend/src/app.module.ts
-
-?? backend/data/
-?? backend/src/database/
-?? backend/src/ingestion/
-?? backend/src/prices/
-?? backend/src/products/
-?? backend/src/retailers/
-?? DATABASE_READ.md
-```
-
-Files that must NOT be committed:
-
-```text
-backend/.env
-backend/node_modules/
-backend/dist/
-backend/tsconfig.tsbuildinfo
-node_modules/
-```
-
----
-
-# First GitHub Push Checklist
-
-Before staging:
-
-```bash
-git status --short
-```
-
-Confirm `.env` is ignored:
-
-```bash
-git check-ignore -v backend/.env
-```
-
-Confirm `.env` is not tracked:
-
-```bash
-git ls-files backend/.env
-```
-
-The second command should print nothing.
-
-Stage intended changes:
-
-```bash
-git add   .gitignore   DATABASE_READ.md   backend/package.json   backend/package-lock.json   backend/src   backend/data/samples/tesco-sample.csv
-```
-
-Inspect staged changes:
-
-```bash
-git status
-```
-
-Optional summary:
-
-```bash
-git diff --cached --stat
-```
-
-Optional full diff:
-
-```bash
-git diff --cached
-```
-
-Commit:
-
-```bash
-git commit -m "feat(database): add supermarket pricing database foundation"
-```
-
-Push the branch:
-
-```bash
-git push -u origin feature/database
-```
-
-Future pushes from this branch can normally use:
-
-```bash
-git push
-```
-
----
-
-# Next Development Phase
-
-After the first GitHub push:
-
-1. Normalize retailer product names.
-2. Parse raw prices into integer minor units.
-3. Normalize units and quantities.
-4. Create canonical products.
-5. Match retailer listings to canonical products.
-6. Move validated prices into `price_observations`.
-7. Add product-search endpoints.
-8. Add retailer price-comparison endpoints.
-9. Add basket comparison.
-10. Connect Angular frontend.
-
----
-
-_Last updated: 28 October 2026_
-
-## Current Development Status
-
-The PokéMart backend database foundation now supports ingestion, normalization, cross-retailer product modelling, and preliminary product matching using real supermarket data.
-
-### Real Supermarket Dataset Integration
-
-The development database currently contains **50,000 raw supermarket records**, using a 10,000-row sample from each of the following retailers:
-
-- Aldi
-- ASDA
-- Morrisons
-- Sainsbury's
-- Tesco
-
-The source dataset is the *Time Series UK Supermarket Data* dataset. It is being used as representative prototype data while the PokéMart system and comparison pipeline are developed.
-
-The dataset is UK-based and therefore currently uses GBP pricing. It should not be interpreted as live or current Cork supermarket pricing.
-
-The raw source files are excluded from Git because of their size.
-
-### CSV Ingestion
-
-The CSV ingestion pipeline now supports the source dataset's real column structure, including:
-
-- `names`
-- `prices_(£)`
-- `prices_unit_(£)`
-- `unit`
-- `category`
-- `own_brand`
-- `date`
-- `supermarket`
-
-All original source records are also retained in the `raw` JSONB field of `raw_supermarket_rows`.
-
-This staging approach allows source-data problems to be investigated without losing the original imported values.
-
-### Raw Data Validation
-
-The ingestion pipeline was validated across all five retailers.
-
-Current staging status:
-
-- 50,000 raw rows imported
-- 10,000 rows per retailer
-- All product prices successfully mapped
-- Two ASDA records contain missing unit prices in the original dataset
-- These missing values are intentionally preserved rather than fabricated
-
-Dates in the source dataset use `YYYYMMDD` format, for example:
 
 ```text
 20240413
 ```
 
-The normalization layer converts these to:
+The normalization layer converts this to:
 
 ```text
 2024-04-13
 ```
 
-### Product Normalization
+_Last updated: 14 November 2026_
 
-A `ProductNormalizerService` has been implemented and tested.
+---
 
-The normalization layer currently handles:
+# Product Normalization
+
+PokéMart includes:
+
+```text
+ProductNormalizerService
+```
+
+The service handles:
 
 - retailer-name removal
-- lowercase and punctuation normalization
-- measurement normalization
-- GBP price conversion to integer minor units
+- lowercase normalization
+- punctuation cleanup
 - category normalization
-- own-brand Boolean parsing
-- `YYYYMMDD` date conversion
-- already-normalized ISO dates
+- GBP price conversion into minor units
+- Boolean parsing
+- date conversion
+- unit normalization
+- quantity extraction
 - litre-to-millilitre conversion
 - kilogram-to-gram conversion
 - explicit product counts
-- leading and trailing counts
-- multipacks such as `6x25g`
-- compact counts such as `x8` and `x30`
+- leading counts
+- trailing counts
+- multipacks
+- compact `x8`, `x30`, etc. counts
 
-Examples include:
+Examples:
 
 ```text
 Tesco 200 Cotton Buds
@@ -816,48 +591,25 @@ Tassimo Hot Chocolate Pods x8
 → quantity: 8 count
 ```
 
-The normalization service currently has **11 passing automated tests**.
-
-### Canonical Product Model
-
-PokéMart now includes a `canonical_products` table.
-
-The purpose of a canonical product is to represent the shared product concept behind retailer-specific listings.
-
-For example:
+Automated normalizer tests:
 
 ```text
-Tesco Whole Milk 2L
-Aldi Whole Milk 2L
-ASDA British Whole Milk 2L
-        ↓
-Canonical Product:
-Whole Milk 2L
+11 passing
 ```
 
-The canonical product model currently stores:
+_Last updated: 14 November 2026_
 
-- `id`
-- `display_name`
-- `normalized_name`
-- `category`
-- `quantity_value`
-- `quantity_unit`
-- `created_at`
+---
 
-`retailer_products` now additionally contains:
+# Cross-Retailer Product Matching
 
-- `canonical_product_id`
-- `match_method`
-- `match_confidence`
+PokéMart includes:
 
-The canonical product relationship is nullable while matching is being performed.
+```text
+ProductMatcherService
+```
 
-### Cross-Retailer Product Matching
-
-A preliminary `ProductMatcherService` has been implemented.
-
-Matching currently considers:
+The matcher considers:
 
 - normalized product-name similarity
 - Jaccard token similarity
@@ -865,9 +617,7 @@ Matching currently considers:
 - category compatibility
 - quantity compatibility
 
-The current weighted score is based primarily on product-name similarity, with category and quantity information used as additional evidence.
-
-Initial matching decisions are:
+Current matching thresholds:
 
 ```text
 score >= 0.80
@@ -877,66 +627,208 @@ score >= 0.68 and < 0.80
 → review candidate
 
 score < 0.68
-→ treated as a new/different product
+→ different/new product
 ```
 
-These thresholds are prototype values and are being evaluated against real supermarket listings rather than treated as fixed constants.
+These are prototype thresholds and may be refined using real supermarket data.
 
-The matcher has **6 passing automated tests**.
+Automated matcher tests:
 
-### Real-Data Matching Preview
+```text
+6 passing
+```
 
-A read-only matching preview has been created to evaluate the matcher against real supermarket records before canonical-product relationships are written to the database.
+_Last updated: 14 November 2026_
+
+---
+
+# Real-Data Matching Preview
+
+A read-only matching preview is available for evaluating matching behaviour before canonical relationships are written.
 
 The preview:
 
-- searches each retailer separately
-- balances the number of records sampled per retailer
+- samples retailers separately
+- balances retailer representation
 - compares only products from different retailers
 - removes duplicate time-series representations
-- reports automatic and review candidates
-- exposes Jaccard, edit-distance, category, quantity, and final scores
+- reports automatic candidates
+- reports review candidates
+- exposes Jaccard score
+- exposes edit-distance score
+- exposes category score
+- exposes quantity score
+- exposes final confidence
 
-Queries including products such as eggs, milk, bread, butter, and cola can be used to evaluate matching behaviour.
+Example ambiguous matches are intentionally sent for review instead of automatically merging them.
 
-Ambiguous matches are intentionally classified for review rather than automatically merged.
+_Last updated: 14 November 2026_
 
-### Staging Processing Status
+---
 
-Two processing-control fields have been added to `raw_supermarket_rows`:
+# Staging Transformation
 
-```text
-processed_at
-processing_error
-```
-
-These fields allow staging records to be transformed safely while retaining information about rows that fail processing.
-
-Current status:
+PokéMart now includes:
 
 ```text
-Raw staging rows: 50,000
-Processed rows: 0
+StagingTransformService
 ```
 
-The staging-to-production transformation has not yet been executed.
+This transforms validated staging records into production database records.
 
-### Current Migration History
-
-Six TypeORM migrations are currently applied:
+Pipeline:
 
 ```text
-1. CreateRetailers
-2. CreateRetailerProducts
-3. CreatePriceObservations
-4. CreateRawSupermarketRows
-5. CreateCanonicalProducts
-6. AddRawProcessingStatus
+RawSupermarketRow
+        │
+        ▼
+Validation + Normalization
+        │
+        ├────────► Retailer
+        │
+        ├────────► RetailerProduct
+        │
+        └────────► PriceObservation
+        │
+        ▼
+processed_at / processing_error
 ```
 
-All schema changes are managed using TypeORM migrations with `synchronize: false`.
+For each staging row, the transformation process:
 
-### Current Data Architecture
+1. validates the retailer name
+2. validates and normalizes the product name
+3. converts the raw price to integer minor units
+4. parses the source date
+5. parses and validates the unit price
+6. normalizes the unit
+7. parses the own-brand value
+8. finds or creates the retailer
+9. finds or creates the retailer product
+10. avoids duplicate product/date observations
+11. creates the price observation
+12. marks the staging row as processed
+
+If processing fails:
+
+```text
+processed_at = NULL
+processing_error = failure reason
+```
+
+If processing succeeds:
+
+```text
+processed_at = current timestamp
+processing_error = NULL
+```
+
+Transactions are used so that partially transformed records are not left in the production tables if a transformation fails.
+
+_Last updated: 20 November 2026_
+
+---
+
+# Unit Price Handling
+
+Non-positive source unit prices are treated as unavailable rather than legitimate zero-cost prices.
+
+For example:
+
+```text
+prices_unit_(£) = 0.0
+```
+
+is stored as:
+
+```text
+NULL
+```
+
+for the production unit price.
+
+Actual product prices must be valid and greater than zero.
+
+_Last updated: 20 November 2026_
+
+---
+
+# Staging Transform Command
+
+The transform can be run with:
+
+```bash
+npm run transform:staging -- <limit>
+```
+
+Examples:
+
+```bash
+npm run transform:staging -- 10
+```
+
+```bash
+npm run transform:staging -- 100
+```
+
+The command builds the backend before executing the compiled transformation runner.
+
+The transformation runner uses the TypeORM data source directly and disables migration loading for the transform process because schema migrations are managed separately.
+
+_Last updated: 20 November 2026_
+
+---
+
+# Incremental Validation
+
+The staging transformation was deliberately tested incrementally instead of immediately processing all 50,000 records.
+
+Validation sequence:
+
+```text
+10 rows
+   ↓
+100 total rows
+   ↓
+1,000 total rows
+   ↓
+1,001 total rows
+```
+
+Current verified state:
+
+```text
+Raw staging rows:      50,000
+Processed rows:         1,001
+Processing errors:          0
+Retailer products:       1,001
+Price observations:      1,001
+```
+
+The first 1,001 rows were transformed successfully with:
+
+```text
+0 processing failures
+```
+
+The initial transformed records were inspected manually to verify:
+
+- retailer values
+- product names
+- normalized product names
+- own-brand values
+- prices
+- unit-price handling
+- currency
+- observed dates
+
+The transformation will continue to be scaled incrementally.
+
+_Last updated: 20 November 2026_
+
+---
+
+# Current Data Architecture
 
 ```text
 External Supermarket CSV
@@ -944,29 +836,314 @@ External Supermarket CSV
           ▼
 RawSupermarketRow
           │
-          │ normalization
+          │ staging transformation
           ▼
-RetailerProduct
+RetailerProduct ─────────────► PriceObservation
           │
-          ├──────────────► PriceObservation
-          │
-          │ matching
+          │ canonical matching
           ▼
 CanonicalProduct
 ```
 
-The raw staging layer preserves source data, while the production layer is intended to support retailer comparison, historical pricing, product search, and basket optimization.
+The staging layer preserves original source information.
 
-### Next Development Phase
+The production layer supports:
 
-The next major development tasks are:
+- product search
+- retailer comparison
+- historical prices
+- canonical product matching
+- future basket optimization
 
-1. Transform staging rows into production `RetailerProduct` and `PriceObservation` records.
-2. Apply canonical-product matching to retailer products.
-3. Process the dataset incrementally and validate transformation failures.
-4. Build the product search and price-comparison API.
-5. Build the basket-comparison engine.
-6. Connect the Angular frontend to the PokéMart API.
-7. Expand from development samples to larger portions of the supermarket dataset.
+_Last updated: 20 November 2026_
 
-Last update: 11/14/2026
+---
+
+# Current Backend Validation
+
+The backend currently passes:
+
+```text
+Nest build
+```
+
+```text
+0 lint warnings
+0 lint errors
+```
+
+Automated tests:
+
+```text
+18 passing
+```
+
+Current test groups include:
+
+```text
+ProductNormalizerService: 11 tests
+ProductMatcherService:      6 tests
+AppController:              1 test
+```
+
+Formatting and whitespace are checked with:
+
+```bash
+git diff --check
+```
+
+_Last updated: 20 November 2026_
+
+---
+
+# Current Database Pipeline Status
+
+## Completed
+
+- [x] PostgreSQL + pgvector Docker environment
+- [x] NestJS TypeORM integration
+- [x] TypeORM migration system
+- [x] Retailer model
+- [x] Retailer-product model
+- [x] historical price-observation model
+- [x] raw supermarket staging model
+- [x] 50,000-row supermarket dataset ingestion
+- [x] real source-column mapping
+- [x] raw JSONB preservation
+- [x] product normalization
+- [x] quantity normalization
+- [x] date normalization
+- [x] price normalization
+- [x] canonical-product database model
+- [x] retailer-product canonical relationship
+- [x] cross-retailer product matcher
+- [x] real-data matching preview
+- [x] staging processing-status fields
+- [x] Prisma/TypeORM consolidation
+- [x] TypeORM authentication persistence
+- [x] staging-to-production transformation service
+- [x] staging transformation CLI
+- [x] incremental transformation validation through 1,001 rows
+- [x] zero transformation failures through current validation sample
+- [x] build validation
+- [x] lint validation
+- [x] automated backend tests
+
+_Last updated: 20 November 2026_
+
+---
+
+# Remaining Database / Backend Roadmap
+
+## 1. Canonical Product Assignment
+
+Production `RetailerProduct` records must next be connected to `CanonicalProduct` records.
+
+This phase will:
+
+- evaluate existing canonical products
+- use `ProductMatcherService`
+- automatically link high-confidence matches
+- create canonical products for new products
+- store `canonical_product_id`
+- store `match_method`
+- store `match_confidence`
+- preserve ambiguous matches for review
+
+_Last updated: 20 November 2026_
+
+---
+
+## 2. Complete Staging Transformation
+
+Continue processing larger portions of:
+
+```text
+50,000 raw rows
+```
+
+while monitoring:
+
+```text
+processed_at
+processing_error
+```
+
+_Last updated: 20 November 2026_
+
+---
+
+## 3. Product Search and Price Comparison API
+
+Planned backend capabilities include:
+
+```text
+GET /products/search?q=<query>
+```
+
+The API should return comparable retailer listings including:
+
+- canonical product
+- retailer
+- retailer-specific product
+- current price
+- unit price
+- currency
+- observation date
+
+_Last updated: 20 November 2026_
+
+---
+
+## 4. Basket Comparison
+
+The basket comparison engine will accept a set of grocery products and calculate totals across retailers.
+
+Initial MVP goal:
+
+```text
+basket
+   │
+   ├── Tesco total
+   ├── Aldi total
+   ├── ASDA total
+   ├── Morrisons total
+   └── Sainsbury's total
+          │
+          ▼
+cheapest single-store basket
+```
+
+More advanced split-store optimization may be added later.
+
+_Last updated: 20 November 2026_
+
+---
+
+## 5. Angular Integration
+
+Once the backend search and comparison API is stable, the Angular frontend will consume the PokéMart API for:
+
+- grocery search
+- retailer price results
+- basket construction
+- basket comparison
+- historical price information
+
+_Last updated: 20 November 2026_
+
+---
+
+# Current Development Priority
+
+The immediate backend priority is:
+
+```text
+Canonical Product Assignment
+        ↓
+Product Search / Price Comparison API
+        ↓
+Basket Comparison
+        ↓
+Angular Integration
+```
+
+Major database architecture changes should be avoided unless required by an identified defect.
+
+_Last updated: 20 November 2026_
+
+---
+
+# Useful Commands
+
+From:
+
+```text
+PokeMart/backend
+```
+
+Start Docker:
+
+```bash
+sudo docker compose -f ../docker-compose.yml up -d
+```
+
+Check Docker:
+
+```bash
+sudo docker compose -f ../docker-compose.yml ps
+```
+
+Show migrations:
+
+```bash
+npm run migration:show
+```
+
+Build:
+
+```bash
+npm run build
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+Test:
+
+```bash
+npm test
+```
+
+Import supermarket CSV data:
+
+```bash
+npm run import:csv -- <csv-file> <retailer> <limit>
+```
+
+Transform staging data:
+
+```bash
+npm run transform:staging -- <limit>
+```
+
+Check Git whitespace:
+
+```bash
+git diff --check
+```
+
+Check Git status:
+
+```bash
+git status
+```
+
+_Last updated: 20 November 2026_
+
+---
+
+# Current Project Snapshot
+
+```text
+Raw supermarket records:     50,000
+Retailers represented:            5
+TypeORM migrations:               6
+Normalizer tests:                11
+Matcher tests:                    6
+Total automated tests:           18
+
+Verified transformed rows:     1,001
+Transformation failures:          0
+Retailer products created:     1,001
+Price observations created:    1,001
+```
+
+_Last updated: 20 November 2026_
+
+---
+
+_Last overall documentation update: 20 November 2026_
