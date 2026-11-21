@@ -1,0 +1,161 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { RetailerProduct } from './entities/retailer-product.entity.js';
+
+interface RawProductSearchRow {
+  productId: string;
+  sourceName: string;
+  normalizedName: string;
+  ownBrand: boolean;
+  matchMethod: string | null;
+  matchConfidence: number | null;
+  canonicalId: string | null;
+  canonicalDisplayName: string | null;
+  retailerId: string;
+  retailerName: string;
+  priceMinor: number;
+  unitPriceMinor: number | null;
+  unitLabel: string | null;
+  currency: string;
+  observedDate: string;
+}
+
+@Injectable()
+export class ProductsService {
+  constructor(
+    @InjectRepository(RetailerProduct)
+    private readonly retailerProductRepository: Repository<RetailerProduct>,
+  ) {}
+
+  async search(query: string, limit = 25) {
+    const pattern = `%${query.trim()}%`;
+
+    const rows = await this.basePriceQuery()
+      .where(
+        `
+        (
+          product.source_name ILIKE :pattern
+          OR product.normalized_name ILIKE :pattern
+          OR canonical.display_name ILIKE :pattern
+          OR canonical.normalized_name ILIKE :pattern
+        )
+        `,
+        { pattern },
+      )
+      .orderBy('product.normalized_name', 'ASC')
+      .addOrderBy('retailer.name', 'ASC')
+      .limit(limit)
+      .getRawMany<RawProductSearchRow>();
+
+    return {
+      query,
+      count: rows.length,
+      results: rows.map((row) => this.mapResult(row)),
+    };
+  }
+
+  async pricesForCanonical(canonicalId: string) {
+    const rows = await this.basePriceQuery()
+      .where('canonical.id = :canonicalId', { canonicalId })
+      .andWhere(`product.match_method IN ('automatic', 'new')`)
+      .orderBy('price.price_minor', 'ASC')
+      .addOrderBy('retailer.name', 'ASC')
+      .getRawMany<RawProductSearchRow>();
+
+    return {
+      canonicalProductId: canonicalId,
+      count: rows.length,
+      prices: rows.map((row) => this.mapResult(row)),
+    };
+  }
+
+  private basePriceQuery() {
+    return this.retailerProductRepository
+      .createQueryBuilder('product')
+      .innerJoin('product.retailer', 'retailer')
+      .leftJoin('product.canonicalProduct', 'canonical')
+      .innerJoin('product.prices', 'price')
+      .select([
+        'product.id AS "productId"',
+        'product.source_name AS "sourceName"',
+        'product.normalized_name AS "normalizedName"',
+        'product.own_brand AS "ownBrand"',
+        'product.match_method AS "matchMethod"',
+        'product.match_confidence AS "matchConfidence"',
+        'canonical.id AS "canonicalId"',
+        'canonical.display_name AS "canonicalDisplayName"',
+        'retailer.id AS "retailerId"',
+        'retailer.name AS "retailerName"',
+        'price.price_minor AS "priceMinor"',
+        'price.unit_price_minor AS "unitPriceMinor"',
+        'price.unit_label AS "unitLabel"',
+        'price.currency AS "currency"',
+        'price.observed_date AS "observedDate"',
+      ])
+      .andWhere(
+        `
+        price.observed_date = (
+          SELECT MAX(latest_price.observed_date)
+          FROM price_observations latest_price
+          WHERE latest_price.retailer_product_id = product.id
+        )
+        `,
+      );
+  }
+
+  private mapResult(row: RawProductSearchRow) {
+    const confirmedCanonical =
+      row.matchMethod !== 'review' && row.canonicalId
+        ? {
+            id: row.canonicalId,
+            displayName: row.canonicalDisplayName,
+          }
+        : null;
+
+    const reviewCandidate =
+      row.matchMethod === 'review' && row.canonicalId
+        ? {
+            id: row.canonicalId,
+            displayName: row.canonicalDisplayName,
+          }
+        : null;
+
+    return {
+      productId: row.productId,
+      sourceName: row.sourceName,
+      normalizedName: row.normalizedName,
+      ownBrand: row.ownBrand,
+
+      canonicalProduct: confirmedCanonical,
+      reviewCandidate,
+
+      matchMethod: row.matchMethod,
+      matchConfidence: row.matchConfidence,
+
+      retailer: {
+        id: row.retailerId,
+        name: row.retailerName,
+      },
+
+      price: {
+        minor: row.priceMinor,
+        amount: row.priceMinor / 100,
+        currency: row.currency,
+      },
+
+      unitPrice:
+        row.unitPriceMinor == null
+          ? null
+          : {
+              minor: row.unitPriceMinor,
+              amount: row.unitPriceMinor / 100,
+              unit: row.unitLabel,
+              currency: row.currency,
+            },
+
+      observedDate: row.observedDate,
+    };
+  }
+}
