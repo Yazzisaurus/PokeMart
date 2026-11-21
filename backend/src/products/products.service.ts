@@ -71,6 +71,103 @@ export class ProductsService {
     };
   }
 
+  async compareBasket(canonicalProductIds: string[]) {
+    const requestedIds = [...new Set(canonicalProductIds)];
+
+    const rows = await this.basePriceQuery()
+      .where('canonical.id IN (:...canonicalIds)', {
+        canonicalIds: requestedIds,
+      })
+      .andWhere(`product.match_method IN ('automatic', 'new')`)
+      .getRawMany<RawProductSearchRow>();
+
+    const retailers = new Map<
+      string,
+      {
+        retailerId: string;
+        retailerName: string;
+        products: Map<string, RawProductSearchRow>;
+      }
+    >();
+
+    for (const row of rows) {
+      if (!row.canonicalId) {
+        continue;
+      }
+
+      let retailer = retailers.get(row.retailerId);
+
+      if (!retailer) {
+        retailer = {
+          retailerId: row.retailerId,
+          retailerName: row.retailerName,
+          products: new Map<string, RawProductSearchRow>(),
+        };
+
+        retailers.set(row.retailerId, retailer);
+      }
+
+      const existing = retailer.products.get(row.canonicalId);
+
+      if (!existing || row.priceMinor < existing.priceMinor) {
+        retailer.products.set(row.canonicalId, row);
+      }
+    }
+
+    const stores = [...retailers.values()]
+      .map((retailer) => {
+        const selectedRows = [...retailer.products.values()];
+
+        const totalMinor = selectedRows.reduce(
+          (total, row) => total + row.priceMinor,
+          0,
+        );
+
+        const missingCanonicalProductIds = requestedIds.filter(
+          (id) => !retailer.products.has(id),
+        );
+
+        return {
+          retailer: {
+            id: retailer.retailerId,
+            name: retailer.retailerName,
+          },
+
+          complete: missingCanonicalProductIds.length === 0,
+
+          matchedProducts: selectedRows.length,
+
+          requestedProducts: requestedIds.length,
+
+          total: {
+            minor: totalMinor,
+            amount: totalMinor / 100,
+            currency: 'GBP',
+          },
+
+          missingCanonicalProductIds,
+
+          items: selectedRows.map((row) => this.mapResult(row)),
+        };
+      })
+      .sort((left, right) => {
+        if (left.complete !== right.complete) {
+          return left.complete ? -1 : 1;
+        }
+
+        return left.total.minor - right.total.minor;
+      });
+
+    const cheapestStore = stores.find((store) => store.complete) ?? null;
+
+    return {
+      requestedCanonicalProductIds: requestedIds,
+      requestedCount: requestedIds.length,
+      cheapestStore,
+      stores,
+    };
+  }
+
   private basePriceQuery() {
     return this.retailerProductRepository
       .createQueryBuilder('product')
