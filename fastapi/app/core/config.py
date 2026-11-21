@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     log_format: Literal["text", "json"] = "text"
     cors_origins: list[str] = ["*"]
     database_url: str
+    ollama_url: str = "http://localhost:11434"
+    chat_model: str = "llama3.1"
+    embed_model: str = "nomic-embed-text"
+    db_url: str = "postgresql://pokemart:pokemart@localhost:5432/pokemart"
 
 
 settings = Settings()
