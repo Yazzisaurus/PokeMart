@@ -9,7 +9,7 @@ export class ScraperController {
     @Post('aldi')
     scrape(@Body() body: { url: string}) {
         //return this.scraperService.scrape(body.url)
-        return this.scraperService.scrape("https://www.aldi.ie/products/fresh-food/k/1588161416978075")
+        return this.scraperService.scrapeAldi("https://www.aldi.ie/products/fresh-food/k/1588161416978075")
     }
 
 }
