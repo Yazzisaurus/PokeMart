@@ -15,10 +15,13 @@ export class CartItem {
   readonly removed = output<void>();
 
   protected linePrice(): string {
-    return money(this.item().unitPrice * this.item().quantity);
+    return money(this.item().unitPrice * this.item().quantity, this.item().currency);
   }
 }
 
-export function money(value: number): string {
-  return `€${value.toFixed(2)}`;
+export function money(value: number, currency: string): string {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency,
+  }).format(value);
 }

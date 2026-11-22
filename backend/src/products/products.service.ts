@@ -71,6 +71,64 @@ export class ProductsService {
     };
   }
 
+  async historyForProduct(productId: string) {
+    const rows = await this.retailerProductRepository
+      .createQueryBuilder('product')
+      .innerJoin('product.retailer', 'retailer')
+      .innerJoin('product.prices', 'price')
+      .where('product.id = :productId', { productId })
+      .select([
+        'product.id AS "productId"',
+        'product.source_name AS "sourceName"',
+        'retailer.id AS "retailerId"',
+        'retailer.name AS "retailerName"',
+        'price.price_minor AS "priceMinor"',
+        'price.unit_price_minor AS "unitPriceMinor"',
+        'price.unit_label AS "unitLabel"',
+        'price.currency AS "currency"',
+        'price.observed_date AS "observedDate"',
+      ])
+      .orderBy('price.observed_date', 'ASC')
+      .getRawMany<{
+        productId: string;
+        sourceName: string;
+        retailerId: string;
+        retailerName: string;
+        priceMinor: number;
+        unitPriceMinor: number | null;
+        unitLabel: string | null;
+        currency: string;
+        observedDate: string;
+      }>();
+
+    return {
+      productId,
+      count: rows.length,
+      history: rows.map((row) => ({
+        sourceName: row.sourceName,
+        retailer: {
+          id: row.retailerId,
+          name: row.retailerName,
+        },
+        price: {
+          minor: Number(row.priceMinor),
+          amount: Number(row.priceMinor) / 100,
+          currency: row.currency,
+        },
+        unitPrice:
+          row.unitPriceMinor == null
+            ? null
+            : {
+                minor: Number(row.unitPriceMinor),
+                amount: Number(row.unitPriceMinor) / 100,
+                unit: row.unitLabel,
+                currency: row.currency,
+              },
+        observedDate: row.observedDate,
+      })),
+    };
+  }
+
   async compareBasket(canonicalProductIds: string[]) {
     const requestedIds = [...new Set(canonicalProductIds)];
 

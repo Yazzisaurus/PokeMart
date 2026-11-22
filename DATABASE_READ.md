@@ -39,7 +39,7 @@ The backend uses:
 Database schema changes are managed through TypeORM migrations.
 
 ```typescript
-synchronize: false
+synchronize: false;
 ```
 
 Automatic schema synchronization is intentionally disabled.
@@ -916,10 +916,7 @@ Example request:
 
 ```json
 {
-  "canonicalProductIds": [
-    "canonical-product-id-1",
-    "canonical-product-id-2"
-  ]
+  "canonicalProductIds": ["canonical-product-id-1", "canonical-product-id-2"]
 }
 ```
 
@@ -1332,7 +1329,7 @@ The backend uses:
 Database schema changes are managed through TypeORM migrations.
 
 ```typescript
-synchronize: false
+synchronize: false;
 ```
 
 Automatic schema synchronization is intentionally disabled.
@@ -2465,6 +2462,202 @@ Total: £9.89
 
 _Last updated: 21 November 2026_
 
+## Final Backend and Frontend Integration Status
+
+As of 22 November 2026, the PokéMart database, backend API, and Angular frontend have been integrated into a working end-to-end prototype.
+
+### Supermarket Data Processing
+
+The development database contains **50,000 raw supermarket records**, with 10,000 source rows from each of:
+
+- Aldi
+- ASDA
+- Morrisons
+- Sainsbury's
+- Tesco
+
+All 50,000 staging rows have now been transformed successfully into production records.
+
+Final staging status:
+
+- 50,000 raw staging rows
+- 50,000 processed staging rows
+- 0 staging processing errors
+- 5 retailers represented
+
+The transformed data produced **45,186 unique retailer products** after repeated observations of the same retailer listing were consolidated.
+
+Unique retailer-product totals are:
+
+- Aldi: 5,187
+- ASDA: 9,999
+- Morrisons: 10,000
+- Sainsbury's: 10,000
+- Tesco: 10,000
+
+### Canonical Product Evaluation
+
+All **45,186 retailer products** have now been evaluated by the canonical-product matching pipeline.
+
+Final status:
+
+- 45,186 total retailer products
+- 45,186 evaluated products
+- 0 products awaiting matching evaluation
+
+Matching decisions are recorded using the existing prototype categories:
+
+- `automatic` — sufficiently confident match to an existing canonical product
+- `review` — plausible match requiring review before canonical assignment
+- `new` — treated as a new canonical product
+
+A `review` result is intentionally not treated as a confirmed canonical relationship. The frontend therefore displays a disabled **Review** state instead of allowing uncertain products to be added to basket comparison.
+
+### Product Search API
+
+PokéMart now exposes a working product-search API:
+
+```text
+GET /products/search?q=<query>&limit=<limit>
+```
+
+Search results include:
+
+- retailer product ID
+- source product name
+- normalized name
+- retailer
+- current price
+- unit price
+- observation date
+- canonical product when confirmed
+- review candidate when applicable
+- matching method and confidence
+
+The Angular search interface is connected to this API and can display real records from all five loaded retailers.
+
+### Retailer Price Comparison
+
+Confirmed canonical products can be queried across retailers using:
+
+```text
+GET /products/:canonicalId/prices
+```
+
+The endpoint returns available retailer listings and their latest observed prices for the requested canonical product.
+
+Prices are represented internally in integer minor units and exposed to the frontend as GBP amounts.
+
+### Basket Comparison
+
+PokéMart now supports basket-level retailer comparison using:
+
+```text
+POST /products/basket/compare
+```
+
+The request accepts canonical product IDs and evaluates which retailers can supply the requested basket.
+
+The response includes:
+
+- requested products
+- matched products
+- missing canonical product IDs
+- retailer basket totals
+- whether each retailer can provide the complete basket
+- cheapest complete retailer when available
+
+The Angular cart is connected to this endpoint and displays basket-comparison results using products added from real search results.
+
+### Historical Price Support
+
+Historical prices are retained in the `price_observations` table.
+
+Historical pricing is exposed for an exact retailer listing using:
+
+```text
+GET /products/retailer/:productId/history
+```
+
+Retailer-product history is used instead of canonical-product history so that price observations for different products are not incorrectly combined when prototype matching groups similar products too broadly.
+
+The endpoint returns:
+
+- retailer product ID
+- source product name
+- retailer
+- historical price
+- historical unit price when available
+- currency
+- observation date
+
+The Angular product-result component includes an expandable **Price history** section displaying the dated historical observations for that exact retailer listing.
+
+### Frontend Integration
+
+The Angular frontend is now connected to the NestJS backend for the core prototype workflow.
+
+Implemented functionality includes:
+
+- API-backed product search
+- retailer-specific search results
+- GBP price display
+- Aldi, ASDA, Morrisons, Sainsbury's, and Tesco retailer identification
+- add-to-cart functionality for confirmed canonical products
+- explicit Review state for uncertain canonical matches
+- shopping-cart state
+- basket comparison
+- cheapest complete retailer display
+- historical-price display
+
+### Validation
+
+Backend validation currently passes:
+
+```text
+Build: successful
+Lint: 0 warnings, 0 errors
+Tests: 18 / 18 passed
+```
+
+The Angular production build also completes successfully.
+
+Angular currently reports a bundle-size warning because the initial bundle exceeds the configured 500 kB budget. This is a warning rather than a build failure and has not been treated as a required prototype feature change.
+
+### Prototype Data Limitation
+
+The current supermarket dataset is UK-based and uses GBP pricing.
+
+It is representative prototype data and should not be interpreted as live or current supermarket pricing for Cork or Ireland.
+
+The current product-matching thresholds and canonical groupings are also prototype results. Some similarity matches are intentionally flagged for review rather than automatically accepted.
+
+### Current End-to-End Flow
+
+```text
+Raw supermarket CSV data
+        |
+        v
+raw_supermarket_rows
+        |
+        v
+Normalization and staging transformation
+        |
+        v
+Retailer products + price observations
+        |
+        v
+Canonical-product evaluation
+        |
+        v
+NestJS product/search/price/basket/history APIs
+        |
+        v
+Angular search and cart interface
+```
+
+The core PokéMart database/backend/frontend prototype is now operational end to end.
+
 ---
 
-_Last overall documentation update: 21 November 2026_
+_Last overall documentation update: 22 November 2026_

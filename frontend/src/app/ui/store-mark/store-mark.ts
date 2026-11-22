@@ -1,6 +1,13 @@
 import { Component, input } from '@angular/core';
 
-export type StoreId = 'aldi' | 'tesco' | 'lidl' | 'dunnes';
+export type StoreId =
+  | 'aldi'
+  | 'tesco'
+  | 'asda'
+  | 'morrisons'
+  | 'sainsburys'
+  | 'lidl'
+  | 'dunnes';
 
 @Component({
   selector: 'app-store-mark',
