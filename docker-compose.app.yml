@@ -1,13 +1,35 @@
 services:
-  #Adding docker file to work alongside the original docker-compose file, so that we can build the fastapi image and run it in the CI workflow.
-  fastapi:
+  backend:
     build:
       context: .
-      dockerfile: .github/docker/fast.api.Dockerfile
+      dockerfile: .github/docker/backend.Dockerfile
     ports:
-      - "8000:8000"
+      - "3000:3000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://pokemart:pokemart@postgres/pokemart
+      DATABASE_URL: postgresql://pokemart:pokemart@postgres:5432/pokemart
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-not-for-production}
+    command: sh -c "npx prisma migrate deploy && node dist/main"
     depends_on:
       postgres:
         condition: service_healthy
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: .github/docker/fastapi.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://pokemart:pokemart@postgres:5432/pokemart
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: .github/docker/frontend.Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend

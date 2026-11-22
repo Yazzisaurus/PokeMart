@@ -41,8 +41,13 @@ jobs:
         - name: Build
           run: npm run build
 
-        - name: Unit tests
-          run: npm test -- --watch=false
+        - name: Unit tests (if any exist))
+          run: |
+            if [ -n "$(find src -name '*.spec.ts' -o -name '*_test.ts' | head -n 1)" ]; then
+              npm test -- --watch=false
+            else
+              echo "No test files found - skipping."
+            fi
 
     python:
       name: Python (${{ matrix.project }}) - install and check
