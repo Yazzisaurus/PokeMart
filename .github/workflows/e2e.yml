@@ -26,14 +26,13 @@ jobs:
       # The test shopper. Create these in: repo Settings > Secrets and variables > Actions.
       E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-      # Where the app will be running on this rented computer.
+
       BASE_URL: http://localhost:4200
       API_URL: http://localhost:8000
     steps:
       - name: Get the code
         uses: actions/checkout@v5
 
-      # Fail early with a clear sentence instead of a confusing login error.
       - name: Check the test shopper's login exists
         run: |
           if [ -z "$E2E_EMAIL" ] || [ -z "$E2E_PASSWORD" ]; then
@@ -41,14 +40,9 @@ jobs:
             exit 1
           fi
 
-      # ---- Start the whole app -------------------------------------------
-      # Database + API + website, from the two compose files. "--build" makes
-      # the images fresh from this commit's code.
       - name: Start database, API and website
         run: docker compose -f docker-compose.yml -f docker-compose.app.yml up -d --build --wait
 
-      # Compose says "started", not "ready to answer". Knock on each door
-      # (max 2 minutes) until it answers. "-f" = treat error pages as failure.
       - name: Wait until the website and API answer
         run: |
           for url in "$BASE_URL" "$API_URL/docs"; do
@@ -60,27 +54,20 @@ jobs:
             done
           done
 
-      # ---- Get the test robot ready --------------------------------------
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 24
 
-      # Use the lock file if the team has committed one (exact, repeatable
-      # installs); otherwise fall back to a normal install.
       - name: Install test packages
         working-directory: .github/e2e
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-      # Downloads Chromium plus the Linux libraries it needs.
       - name: Install the browser
         working-directory: .github/e2e
         run: npx playwright install --with-deps chromium
 
-      # ---- The three checks, each its own line in the GitHub UI -----------
-      # "!cancelled()" = run this step even if the one before failed, so one
-      # failure does not hide the results of the others.
       - name: Sign-in tests
         working-directory: .github/e2e
         run: npx playwright test signin
@@ -95,9 +82,6 @@ jobs:
         working-directory: .github/e2e
         run: npx playwright test cart
 
-      # ---- Evidence and tidy-up -------------------------------------------
-      # The report holds screenshots and traces of failed tests. Download it
-      # from the bottom of the run's page ("Artifacts").
       - name: Save the test report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
