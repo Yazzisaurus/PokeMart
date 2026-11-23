@@ -76,4 +76,12 @@ export class ProductsController {
   ) {
     return this.productsService.pricesForCanonical(canonicalId);
   }
+
+  @Get('retailer/:productId/history')
+  history(
+    @Param('productId', ParseUUIDPipe)
+    productId: string,
+  ) {
+    return this.productsService.historyForProduct(productId);
+  }
 }
