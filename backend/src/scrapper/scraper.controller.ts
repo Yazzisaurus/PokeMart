@@ -7,8 +7,8 @@ export class ScraperController {
     constructor(private readonly scraperService: ScraperService) {}
 
     @Post('aldi')
-    scrape(@Body() body: { pages: number}) {
-        return this.scraperService.scrapeAldi(body.pages);
+    scrape(@Body() body: { category: string}) {
+        return this.scraperService.scrapeAldi(body.category);
     }
 
 }
