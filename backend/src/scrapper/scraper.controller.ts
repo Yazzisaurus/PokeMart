@@ -10,5 +10,4 @@ export class ScraperController {
     scrape(@Body() body: { category: string}) {
         return this.scraperService.scrapeAldi(body.category);
     }
-
 }

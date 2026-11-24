@@ -64,23 +64,15 @@ export class ScraperService {
                 break;
         }
 
-
-        let html = await this.getHTML(url);
-        let dom = new JSDOM(html);
-        let doc = dom.window.document;
-        let maxPage = 1;
-        let pagination = doc.querySelectorAll(".base-pagination :nth-last-child(2 of a)");
-        if(pagination) {
-            maxPage = Number(pagination[0]?.textContent?.trim());
-        }
+        const maxPage = await this.getMaxPage(url);
 
         let names: string[] = [];
         let prices: string[] = [];
         let priceWeight: string[] = [];
 
         for (let page = 1; page <= maxPage; page++) {
-            let html = await this.getHTML(urlAldi + page);
 
+            let html = await this.getHTML(urlAldi + page);
             let dom = new JSDOM(html);
             let doc = dom.window.document;
             let grid = doc.querySelector(".product-grid");
