@@ -126,4 +126,21 @@ export class ScraperService {
 
         return response.text();
     }
+
+    async getMaxPage(url: string) {
+
+        const html = await this.getHTML(url);
+        const dom = new JSDOM(html);
+        const doc = dom.window.document;
+        const pagination = doc.querySelectorAll(".base-pagination :nth-last-child(2 of a)");
+
+        let maxPage = 1
+        if(pagination) {
+            maxPage = Number(pagination[0]?.textContent?.trim());
+        }
+
+        dom.window.close();
+
+        return maxPage;
+    }
 }
