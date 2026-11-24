@@ -11,6 +11,7 @@ import { PricesModule } from './prices/prices.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
 import { NormalizationModule } from './normalization/normalization.module.js';
 import { MatchingModule } from './matching/matching.module.js';
+import { ScraperModule } from './scrapper/scraper.module.js';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { MatchingModule } from './matching/matching.module.js';
     IngestionModule,
     NormalizationModule,
     MatchingModule,
+    ScraperModule
   ],
 
   controllers: [AppController],
