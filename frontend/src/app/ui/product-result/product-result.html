@@ -4,7 +4,14 @@
       <path d="M16 22h32l6 8v46H10V30z" fill="#fff" stroke="#1c1c1a" stroke-width="2" />
       <path d="M16 22 22 12h20l6 10" fill="#f4f4f2" stroke="#1c1c1a" stroke-width="2" />
       <path d="M18 40h28v22H18z" fill="none" stroke="#1c1c1a" stroke-width="1.5" />
-      <text x="32" y="54" text-anchor="middle" font-size="8" font-family="Inter, sans-serif" fill="#1c1c1a">
+      <text
+        x="32"
+        y="54"
+        text-anchor="middle"
+        font-size="8"
+        font-family="Inter, sans-serif"
+        fill="#1c1c1a"
+      >
         MILK
       </text>
     </svg>
@@ -23,7 +30,16 @@
         }
         @case ('tesco') {
           <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-            <rect x="1" y="1" width="30" height="30" rx="6" fill="none" stroke="#1c1c1a" stroke-width="2" />
+            <rect
+              x="1"
+              y="1"
+              width="30"
+              height="30"
+              rx="6"
+              fill="none"
+              stroke="#1c1c1a"
+              stroke-width="2"
+            />
             <text
               x="16"
               y="22"
@@ -72,10 +88,12 @@
         }
       }
       <span class="store-name">{{ product().storeName }}</span>
-      <span class="distance">
-        <mat-icon aria-hidden="true">location_on</mat-icon>
-        {{ product().distance }}
-      </span>
+      @if (product().distance) {
+        <span class="distance">
+          <mat-icon aria-hidden="true">location_on</mat-icon>
+          {{ product().distance }}
+        </span>
+      }
     </div>
   </div>
 
@@ -84,13 +102,46 @@
     @if (product().badge) {
       <div class="badge">{{ product().badge }}</div>
     }
+
     <app-button
       size="compact"
-      [disabled]="inCart()"
-      [ariaLabel]="(inCart() ? 'Added ' : 'Add ') + product().name"
+      [disabled]="inCart() || !product().canonicalProductId"
+      [ariaLabel]="
+        !product().canonicalProductId
+          ? 'Product match requires review'
+          : (inCart() ? 'Added ' : 'Add ') + product().name
+      "
       (click)="added.emit(product().id)"
     >
-      {{ inCart() ? 'Added' : 'Add' }}
+      @if (!product().canonicalProductId) {
+        Review
+      } @else {
+        {{ inCart() ? 'Added' : 'Add' }}
+      }
     </app-button>
+  </div>
+  <div class="history-panel">
+    <button type="button" class="history-toggle" (click)="toggleHistory()">
+      {{ historyOpen() ? 'Hide price history' : 'Price history' }}
+    </button>
+
+    @if (historyOpen()) {
+      <div class="history-list">
+        @if (historyLoading()) {
+          <div class="history-message">Loading price history...</div>
+        } @else if (historyError()) {
+          <div class="history-message">Unable to load price history.</div>
+        } @else if (history().length === 0) {
+          <div class="history-message">No historical prices available.</div>
+        } @else {
+          @for (entry of history(); track entry.observedDate) {
+            <div class="history-row">
+              <span>{{ historyDate(entry.observedDate) }}</span>
+              <strong>{{ historyPrice(entry) }}</strong>
+            </div>
+          }
+        }
+      </div>
+    }
   </div>
 </article>

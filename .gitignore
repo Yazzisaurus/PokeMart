@@ -39,6 +39,11 @@ testem.log
 # Generated Prisma client
 backend/src/generated/prisma
 
+# Supermarket dataset files
+backend/data/raw/
+backend/data/processed/
+backend/data/samples/tesco-real-10k.csv
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
