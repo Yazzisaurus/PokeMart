@@ -1,28 +1,42 @@
-import { Injectable } from "@nestjs/common";
-import { Prisma } from "../generated/prisma/client.js";
-import { PrismaService } from "../prisma/prisma.service.js";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'node:crypto';
+import { QueryFailedError, Repository } from 'typeorm';
+
+import { User } from './entities/user.entity.js';
 
 @Injectable()
 export class UserRepository {
+  constructor(
+    @InjectRepository(User)
+    private readonly users: Repository<User>,
+  ) {}
 
-    constructor(private prisma: PrismaService) {}
+  findByEmail(email: string) {
+    return this.users.findOne({
+      where: { email },
+    });
+  }
 
-    findByEmail(email: string) {
-        return this.prisma.user.findUnique({
-            where: { email },
-        });
-    }
+  async create(email: string, password: string) {
+    const user = this.users.create({
+      id: randomUUID(),
+      email,
+      password,
+    });
 
-    async create(email: string, password: string) {
-        try {
-            return await this.prisma.user.create({
-                data: { email, password },
-            });
-        } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-                return null;
-            }
-            throw error;
+    try {
+      return await this.users.save(user);
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        const driverError = error.driverError as { code?: string };
+
+        if (driverError.code === '23505') {
+          return null;
         }
+      }
+
+      throw error;
     }
+  }
 }
