@@ -18,6 +18,14 @@ export async function login(
   await page.getByRole('button', { name: TEXT.signInButton }).click();
 }
 
+export async function signIn(page: Page) {
+  await login(page);
+  await expect(
+    page,
+    'Sign-in failed: still on the login page. Check E2E_EMAIL / E2E_PASSWORD, that this user exists in the test database, and the backend logs.',
+  ).not.toHaveURL(new RegExp(ROUTES.login), { timeout:10_000 });
+}
+
 // "Am I really signed in?" = we left the login page AND a sign-out control appeared.
 export async function expectSignedIn(page: Page) {
   await expect(page).not.toHaveURL(new RegExp(ROUTES.login));
