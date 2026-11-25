@@ -23,6 +23,40 @@
   font-weight: 700;
 }
 
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.heading {
+  font: var(--mat-sys-title-medium);
+  font-weight: 700;
+}
+
+.scale {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scale-label {
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+.scale-input {
+  width: 14rem;
+  max-width: 50%;
+  margin: 0 0 0 auto;
+  accent-color: var(--mat-sys-on-surface);
+}
+
+.theme-input {
+  margin-left: auto;
+  accent-color: var(--mat-sys-on-surface);
+}
+
 form {
   display: flex;
   flex-direction: column;
@@ -32,6 +66,12 @@ form {
 .note {
   color: var(--mat-sys-on-surface-variant);
   font: var(--mat-sys-body-medium);
+}
+
+.divider {
+  margin: 0.25rem 0;
+  border: 0;
+  border-top: 0.0625rem solid var(--mat-sys-outline-variant);
 }
 
 @media (min-width: 48rem) {

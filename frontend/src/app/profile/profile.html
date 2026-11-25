@@ -37,4 +37,33 @@
       <app-button appearance="text" type="button" (click)="startChange()">Change password</app-button>
     }
   </form>
+
+  <hr class="divider" />
+
+  <section class="section" aria-labelledby="accessibility">
+    <div class="heading" id="accessibility">Accessibility</div>
+    <div class="scale">
+      <label class="scale-label" for="rem-ratio">Zoom control</label>
+      <input
+        id="rem-ratio"
+        class="scale-input"
+        type="range"
+        [min]="remMin"
+        [max]="remMax"
+        step="1"
+        [value]="remPx()"
+        (change)="setRemPx($event)"
+      />
+    </div>
+    <div class="scale">
+      <label class="scale-label" for="high-contrast">High contrast</label>
+      <input
+        id="high-contrast"
+        class="theme-input"
+        type="checkbox"
+        [checked]="highContrast()"
+        (change)="setHighContrast($event)"
+      />
+    </div>
+  </section>
 </section>
