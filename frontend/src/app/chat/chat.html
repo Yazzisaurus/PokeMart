@@ -1,0 +1,47 @@
+<section class="screen" aria-label="Chat">
+  <div class="title">Chat</div>
+
+  <div class="thread" #thread>
+    @if (messages().length === 0 && !waiting()) {
+      <div class="empty">Ask about products, prices, or the cheapest store nearby.</div>
+    }
+
+    @for (message of messages(); track message.id) {
+      <div class="row" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+        <div class="bubble">{{ message.content }}</div>
+      </div>
+    }
+
+    @if (waiting()) {
+      <div class="row assistant" role="status">
+        <span class="sr">Waiting for a reply</span>
+        <div class="bubble pending" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    }
+
+    @if (failed()) {
+      <div class="error">The assistant could not reply. Try again.</div>
+    }
+  </div>
+
+  <form class="composer" (submit)="send($event)">
+    <label class="field">
+      <span class="sr">Message</span>
+      <textarea
+        rows="1"
+        placeholder="Ask about a product or price"
+        [value]="draft()"
+        [disabled]="waiting()"
+        (input)="onDraft($event)"
+        (keydown)="onKeydown($event)"
+      ></textarea>
+    </label>
+    <button type="submit" aria-label="Send message" [disabled]="waiting() || !draft().trim()">
+      <mat-icon aria-hidden="true">send</mat-icon>
+    </button>
+  </form>
+</section>
