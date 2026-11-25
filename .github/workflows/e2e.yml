@@ -54,6 +54,15 @@ jobs:
             done
           done
 
+      - name: Show backend start-up logs and database tables
+        continue-on-error: true
+        run: |
+          echo "=== backend logs (last 80 lines) ==="
+          docker compose -f docker-compose.yml -f docker-compose.app.yml logs --no-color --tail=80 backend
+          echo "=== tables in the database ==="
+          docker compose -f docker-compose.yml -f docker-compose.app.yml exec -T postgres \
+            psql -U pokemart -d pokemart -c '\dt'
+
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
@@ -62,7 +71,12 @@ jobs:
       - name: Install test packages
         working-directory: .github/e2e
         run: |
+          if [ ! -f package.json ]; then
+            echo "::error::.github/e2e/package.json is missing from the repo. Commit it (and package-lock.json)."
+            exit 1
+          fi
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          ls node_modules/@playwright/test > /dev/null
 
       - name: Install the browser
         working-directory: .github/e2e
