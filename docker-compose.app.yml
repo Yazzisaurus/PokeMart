@@ -8,6 +8,7 @@ services:
     environment:
       DATABASE_URL: postgresql://pokemart:pokemart@postgres:5432/pokemart
       JWT_SECRET: ${JWT_SECRET:-dev-only-secret-not-for-production}
+      FASTAPI_URL: http://fastapi:8000
     command: sh -c "npx prisma migrate deploy && node dist/main"
     depends_on:
       postgres:
