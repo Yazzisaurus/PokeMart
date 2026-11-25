@@ -1,4 +1,12 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+  type Relation,
+} from 'typeorm';
+
+import { Conversation } from '../../chat/entities/conversation.entity.js';
 
 @Entity({ name: 'users' })
 export class User {
@@ -10,4 +18,7 @@ export class User {
 
   @Column({ type: 'text' })
   password!: string;
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user)
+  conversations!: Relation<Conversation[]>;
 }

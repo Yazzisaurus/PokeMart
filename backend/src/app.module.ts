@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
+import { ChatModule } from './chat/chat.module.js';
 import { RetailersModule } from './retailers/retailers.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { PricesModule } from './prices/prices.module.js';
@@ -36,6 +37,7 @@ import { ScraperModule } from './scrapper/scraper.module.js';
     }),
 
     AuthModule,
+    ChatModule,
     RetailersModule,
     ProductsModule,
     PricesModule,

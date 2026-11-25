@@ -1,0 +1,202 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.screen {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.5rem 1.25rem 0.75rem;
+}
+
+.title {
+  flex-shrink: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+}
+
+.thread {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem 0;
+  scrollbar-width: none;
+}
+
+.thread::-webkit-scrollbar {
+  display: none;
+}
+
+.empty,
+.error {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.error {
+  color: var(--mat-sys-error);
+}
+
+.row {
+  display: flex;
+}
+
+.row.user {
+  justify-content: flex-end;
+}
+
+.row.assistant {
+  justify-content: flex-start;
+}
+
+.bubble {
+  max-width: 80%;
+  padding: 0.75rem 0.875rem;
+  border-radius: 1rem;
+  font: var(--mat-sys-body-large);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.user .bubble {
+  background: var(--mat-sys-on-surface);
+  color: var(--mat-sys-surface);
+  border-bottom-right-radius: 0.25rem;
+}
+
+.assistant .bubble {
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  border-bottom-left-radius: 0.25rem;
+}
+
+.pending {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 3.25rem;
+  min-height: 1.25rem;
+}
+
+.pending span {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: currentColor;
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.pending span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.pending span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.composer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 0.0625rem solid var(--mat-sys-outline-variant);
+}
+
+.field {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  max-height: 7rem;
+  margin: 0;
+  padding: 0.7rem 0.875rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
+  resize: none;
+}
+
+textarea:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.125rem;
+}
+
+button {
+  display: grid;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mat-sys-on-surface);
+  color: var(--mat-sys-surface);
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+button:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.125rem;
+}
+
+button mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.sr {
+  position: absolute;
+  width: 0.0625rem;
+  height: 0.0625rem;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pending span {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-0.15rem);
+  }
+}
+
+@media (min-width: 48rem) {
+  .screen {
+    padding: 1.5rem 1.75rem 1rem;
+  }
+}

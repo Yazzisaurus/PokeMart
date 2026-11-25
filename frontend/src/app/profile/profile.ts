@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { accessibilityLimits, readAccessibility, saveAccessibility } from '../core/accessibility';
 import { Button } from '../ui/button/button';
 import { TextField } from '../ui/text-field/text-field';
 
@@ -14,6 +15,10 @@ export class Profile {
   private readonly submitted = signal(false);
   protected readonly changing = signal(false);
   protected readonly updated = signal(false);
+  protected readonly remMin = accessibilityLimits.remMin;
+  protected readonly remMax = accessibilityLimits.remMax;
+  protected readonly remPx = signal(accessibilityLimits.remDefault);
+  protected readonly highContrast = signal(false);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     name: [{ value: 'Syed Muhammad Akbar', disabled: true }],
@@ -24,6 +29,9 @@ export class Profile {
   });
 
   constructor() {
+    const stored = readAccessibility();
+    this.remPx.set(stored.remPx);
+    this.highContrast.set(stored.highContrast);
     this.form.controls.password.valueChanges.subscribe(() => {
       this.form.controls.confirmPassword.updateValueAndValidity({ emitEvent: false });
     });
@@ -59,6 +67,18 @@ export class Profile {
       return 'Passwords do not match';
     }
     return null;
+  }
+
+  protected setRemPx(event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    saveAccessibility({ remPx: value, highContrast: this.highContrast() });
+    this.remPx.set(readAccessibility().remPx);
+  }
+
+  protected setHighContrast(event: Event): void {
+    const next = (event.target as HTMLInputElement).checked;
+    this.highContrast.set(next);
+    saveAccessibility({ remPx: this.remPx(), highContrast: next });
   }
 
   protected startChange(): void {

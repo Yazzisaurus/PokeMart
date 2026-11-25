@@ -3,11 +3,12 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { MatIcon } from '@angular/material/icon';
 import { CartState } from '../core/cart-state';
 import { SearchQuery } from '../core/search-query';
+import { ChatBubble } from '../ui/chat-bubble/chat-bubble';
 import { SearchField } from '../ui/search-field/search-field';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIcon, SearchField],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIcon, SearchField, ChatBubble],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
