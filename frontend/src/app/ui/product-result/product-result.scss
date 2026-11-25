@@ -1,0 +1,134 @@
+:host {
+  display: block;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 1rem;
+  background: var(--mat-sys-surface);
+}
+
+.thumb {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container);
+}
+
+.carton {
+  width: 2.35rem;
+  height: 3.1rem;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.name {
+  font: var(--mat-sys-title-small);
+  font-weight: 700;
+}
+
+.detail {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.store {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.store-name {
+  font: var(--mat-sys-label-medium);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.distance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.05rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
+}
+
+.distance mat-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.buy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.35rem;
+  align-self: stretch;
+}
+
+.price {
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.badge {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-small);
+}
+.history-panel {
+  grid-column: 1 / -1;
+  padding-top: 0.5rem;
+  border-top: 0.0625rem solid var(--mat-sys-outline-variant);
+}
+
+.history-toggle {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-large);
+  cursor: pointer;
+}
+
+.history-list {
+  display: grid;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font: var(--mat-sys-body-small);
+}
+
+.history-message {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}

@@ -1,0 +1,116 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  e2e:
+    name: Browser tests (sign in, pages, cart)
+    # Secrets are not handed to pull requests from forks (a safety rule), so
+    # the shopper's password would be empty there. Skip those runs.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      JWT_SECRET: ci-only-${{ github.run_id }}-${{ github.run_attempt }}
+      BASE_URL: http://localhost:4200
+      API_URL: http://localhost:3000
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v5
+
+      - name: Check the test shopper's login exists
+        run: |
+          if [ -z "$E2E_EMAIL" ] || [ -z "$E2E_PASSWORD" ]; then
+            echo "::error::Add repo secrets E2E_EMAIL and E2E_PASSWORD (a real test account in the app)."
+            exit 1
+          fi
+
+      - name: Start database, API and website
+        run: docker compose -f docker-compose.yml -f docker-compose.app.yml up -d --build --wait
+
+      - name: Wait until the website and API answer
+        run: |
+          for url in "$BASE_URL" "$API_URL/docs"; do
+            echo "Waiting for $url"
+            for i in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$url" || true)
+              if [ "$code" != "000" ] && [ -n "$code" ]; then echo "  up ($code)"; break; fi
+              if [ "$i" = "60" ]; then echo "::error::$url never answered"; exit 1; fi
+              sleep 2
+            done
+          done
+
+      - name: Show backend start-up logs and database tables
+        continue-on-error: true
+        run: |
+          echo "=== backend logs (last 80 lines) ==="
+          docker compose -f docker-compose.yml -f docker-compose.app.yml logs --no-color --tail=80 backend
+          echo "=== tables in the database ==="
+          docker compose -f docker-compose.yml -f docker-compose.app.yml exec -T postgres \
+            psql -U pokemart -d pokemart -c '\dt'
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Install test packages
+        working-directory: .github/e2e
+        run: |
+          if [ ! -f package.json ]; then
+            echo "::error::.github/e2e/package.json is missing from the repo. Commit it (and package-lock.json)."
+            exit 1
+          fi
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          ls node_modules/@playwright/test > /dev/null
+
+      - name: Install the browser
+        working-directory: .github/e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Sign-in tests
+        working-directory: .github/e2e
+        run: npx playwright test signin
+
+      - name: Page navigation tests
+        if: ${{ !cancelled() }}
+        working-directory: .github/e2e
+        run: npx playwright test navigation
+
+      - name: Shopping cart tests
+        if: ${{ !cancelled() }}
+        working-directory: .github/e2e
+        run: npx playwright test cart
+
+      - name: Save the test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            .github/e2e/playwright-report/
+            .github/e2e/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Show app logs if something went wrong
+        if: failure()
+        run: docker compose -f docker-compose.yml -f docker-compose.app.yml logs --no-color
+
+      - name: Stop the app
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.app.yml down -v

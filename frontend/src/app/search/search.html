@@ -1,0 +1,43 @@
+<section class="screen" aria-label="Search">
+  <app-search-field class="query" [(value)]="query" (submitted)="runSearch($event)" />
+
+  <div class="filters" role="group" aria-label="Filters">
+    @for (filter of filters; track filter.id) {
+      <app-filter-chip
+        [label]="filter.label"
+        [icon]="filter.icon"
+        [trailing]="filter.trailing"
+        [selected]="isSelected(filter.id)"
+        (pressed)="toggle(filter.id)"
+      />
+    }
+  </div>
+
+  <div class="summary">
+    @if (query().trim()) {
+      <div class="heading">Results for “{{ query().trim() }}”</div>
+    } @else {
+      <div class="heading">Results</div>
+    }
+
+    <div class="count">{{ resultLabel() }}</div>
+  </div>
+
+  @if (loading()) {
+    <div class="empty">Searching PokéMart…</div>
+  } @else if (error()) {
+    <div class="empty">{{ error() }}</div>
+  } @else if (visible().length === 0) {
+    <div class="empty">No products match that search.</div>
+  } @else {
+    <div class="results">
+      @for (product of visible(); track product.id) {
+        <app-product-result
+          [product]="product"
+          [inCart]="isAdded(product.id)"
+          (added)="add($event)"
+        />
+      }
+    </div>
+  }
+</section>

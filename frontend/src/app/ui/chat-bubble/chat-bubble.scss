@@ -1,0 +1,41 @@
+:host {
+  position: fixed;
+  right: 1.25rem;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom, 0rem));
+  z-index: 20;
+}
+
+.bubble {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--mat-sys-on-surface);
+  color: var(--mat-sys-surface);
+  box-shadow: 0 0.5rem 1.25rem color-mix(in srgb, var(--mat-sys-on-surface) 24%, transparent);
+  text-decoration: none;
+}
+
+.bubble mat-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.bubble:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-on-surface);
+  outline-offset: 0.25rem;
+}
+
+@media (min-width: 48rem) {
+  :host {
+    right: 1.75rem;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0rem));
+  }
+}

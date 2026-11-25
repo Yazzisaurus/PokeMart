@@ -1,0 +1,69 @@
+<section class="screen" aria-label="Profile">
+  <div class="title">Profile</div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <app-text-field label="Name" autocomplete="name" [control]="form.controls.name" />
+    <app-text-field label="Email" type="email" autocomplete="email" [control]="form.controls.email" />
+
+    @if (updated()) {
+      <div class="note">Password updated.</div>
+    }
+
+    @if (changing()) {
+      <app-text-field
+        label="Current password"
+        type="password"
+        autocomplete="current-password"
+        [control]="form.controls.currentPassword"
+        [error]="currentPasswordError()"
+      />
+      <app-text-field
+        label="New password"
+        type="password"
+        autocomplete="new-password"
+        [control]="form.controls.password"
+        [error]="passwordError()"
+      />
+      <app-text-field
+        label="Confirm new password"
+        type="password"
+        autocomplete="new-password"
+        [control]="form.controls.confirmPassword"
+        [error]="confirmPasswordError()"
+      />
+      <app-button type="submit">Update password</app-button>
+      <app-button appearance="text" type="button" (click)="cancel()">Cancel</app-button>
+    } @else {
+      <app-button appearance="text" type="button" (click)="startChange()">Change password</app-button>
+    }
+  </form>
+
+  <hr class="divider" />
+
+  <section class="section" aria-labelledby="accessibility">
+    <div class="heading" id="accessibility">Accessibility</div>
+    <div class="scale">
+      <label class="scale-label" for="rem-ratio">Zoom control</label>
+      <input
+        id="rem-ratio"
+        class="scale-input"
+        type="range"
+        [min]="remMin"
+        [max]="remMax"
+        step="1"
+        [value]="remPx()"
+        (change)="setRemPx($event)"
+      />
+    </div>
+    <div class="scale">
+      <label class="scale-label" for="high-contrast">High contrast</label>
+      <input
+        id="high-contrast"
+        class="theme-input"
+        type="checkbox"
+        [checked]="highContrast()"
+        (change)="setHighContrast($event)"
+      />
+    </div>
+  </section>
+</section>

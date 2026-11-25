@@ -1,0 +1,29 @@
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatIcon } from '@angular/material/icon';
+import { CartState } from '../core/cart-state';
+import { SearchQuery } from '../core/search-query';
+import { ChatBubble } from '../ui/chat-bubble/chat-bubble';
+import { SearchField } from '../ui/search-field/search-field';
+
+@Component({
+  selector: 'app-shell',
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIcon, SearchField, ChatBubble],
+  templateUrl: './shell.html',
+  styleUrl: './shell.scss',
+})
+export class Shell {
+  private readonly router = inject(Router);
+  private readonly searchQuery = inject(SearchQuery);
+  private readonly cart = inject(CartState);
+
+  protected readonly cartCount = this.cart.count;
+  protected readonly query = this.searchQuery.text;
+
+  protected onQuery(value: string): void {
+    this.query.set(value);
+    if (value.trim() && !this.router.url.startsWith('/search')) {
+      void this.router.navigate(['/search']);
+    }
+  }
+}

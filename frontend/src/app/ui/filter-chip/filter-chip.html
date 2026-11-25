@@ -1,0 +1,7 @@
+<button type="button" class="chip" [attr.aria-pressed]="selected()" (click)="pressed.emit()">
+  <mat-icon aria-hidden="true">{{ icon() }}</mat-icon>
+  <span class="label">{{ label() }}</span>
+  @if (trailing() === 'expand') {
+    <mat-icon class="chevron" aria-hidden="true">expand_more</mat-icon>
+  }
+</button>

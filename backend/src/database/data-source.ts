@@ -1,0 +1,42 @@
+import 'dotenv/config';
+
+import { DataSource } from 'typeorm';
+
+import { User } from '../auth/entities/user.entity.js';
+import { Conversation } from '../chat/entities/conversation.entity.js';
+import { Message } from '../chat/entities/message.entity.js';
+import { UserSession } from '../chat/entities/user-session.entity.js';
+import { RawSupermarketRow } from '../ingestion/entities/raw-supermarket-row.entity.js';
+import { PriceObservation } from '../prices/entities/price-observation.entity.js';
+import { CanonicalProduct } from '../products/entities/canonical-product.entity.js';
+import { RetailerProduct } from '../products/entities/retailer-product.entity.js';
+import { Retailer } from '../retailers/entities/retailer.entity.js';
+
+export default new DataSource({
+  type: 'postgres',
+
+  host: process.env.DB_HOST ?? 'localhost',
+  port: Number(process.env.DB_PORT ?? 5432),
+
+  username: process.env.DB_USERNAME ?? 'pokemart',
+  password: process.env.DB_PASSWORD ?? 'pokemart',
+  database: process.env.DB_NAME ?? 'pokemart',
+
+  entities: [
+    Retailer,
+    RetailerProduct,
+    CanonicalProduct,
+    PriceObservation,
+    RawSupermarketRow,
+    User,
+    UserSession,
+    Conversation,
+    Message,
+  ],
+
+  migrations: ['src/database/migrations/*{.ts,.js}'],
+
+  migrationsTableName: 'migrations',
+
+  synchronize: false,
+});

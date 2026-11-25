@@ -1,0 +1,70 @@
+<section class="screen" aria-label="Cart">
+  <div class="heading">
+    <div class="title">My Cart</div>
+
+    <div class="meta">
+      <div class="count">{{ itemLabel() }}</div>
+
+      @if (count() > 0) {
+        <button type="button" class="clear" aria-label="Clear cart" (click)="clear()">
+          <mat-icon aria-hidden="true"> delete </mat-icon>
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (items().length === 0) {
+    <div class="empty">Your cart is empty.</div>
+  } @else {
+    <div class="items">
+      @for (item of items(); track item.id) {
+        <app-cart-item
+          [item]="item"
+          (quantityChange)="setQuantity(item.id, $event)"
+          (removed)="remove(item.id)"
+        />
+      }
+    </div>
+  }
+
+  <a class="more" routerLink="/search">
+    <mat-icon aria-hidden="true">add</mat-icon>
+    <span class="more-label"> Add more items </span>
+    <mat-icon aria-hidden="true"> chevron_right </mat-icon>
+  </a>
+
+  @if (count() > 0) {
+    <div class="compare">
+      <div class="compare-heading">
+        <div class="title">Best Price Comparison</div>
+        <div class="count">Total for {{ itemLabel() }}</div>
+      </div>
+
+      @if (comparisonLoading()) {
+        <div class="empty">Comparing retailer prices…</div>
+      } @else if (comparisonError()) {
+        <div class="empty">
+          {{ comparisonError() }}
+        </div>
+      } @else {
+        <div class="stores">
+          @for (store of stores(); track store.storeName) {
+            <app-store-price
+              [store]="store.store"
+              [total]="store.total"
+              [delta]="store.delta"
+              [badge]="store.badge"
+            />
+          }
+        </div>
+      }
+    </div>
+
+    @if (cheapestStore(); as cheapest) {
+      <app-savings-callout
+        [title]="'Cheapest complete basket: ' + cheapest.storeName"
+        [detail]="'Total: ' + cheapest.total"
+      />
+    }
+  }
+</section>

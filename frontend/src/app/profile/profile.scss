@@ -1,0 +1,81 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+:host::-webkit-scrollbar {
+  display: none;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 1.25rem 1.5rem;
+}
+
+.title {
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.heading {
+  font: var(--mat-sys-title-medium);
+  font-weight: 700;
+}
+
+.scale {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scale-label {
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+.scale-input {
+  width: 14rem;
+  max-width: 50%;
+  margin: 0 0 0 auto;
+  accent-color: var(--mat-sys-on-surface);
+}
+
+.theme-input {
+  margin-left: auto;
+  accent-color: var(--mat-sys-on-surface);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.note {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.divider {
+  margin: 0.25rem 0;
+  border: 0;
+  border-top: 0.0625rem solid var(--mat-sys-outline-variant);
+}
+
+@media (min-width: 48rem) {
+  .screen {
+    padding: 1.5rem 1.75rem 2rem;
+  }
+}

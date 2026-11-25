@@ -1,0 +1,16 @@
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wordmark {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+  letter-spacing: -0.045rem;
+}
+
+.title {
+  margin: 2.5rem 0 0;
+  font: var(--mat-sys-headline-medium);
+}

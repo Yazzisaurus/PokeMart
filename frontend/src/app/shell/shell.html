@@ -1,0 +1,76 @@
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <mat-icon aria-hidden="true">shopping_cart</mat-icon>
+      <div class="wordmark">PokeMart</div>
+    </div>
+    <app-search-field
+      class="header-search"
+      label="Search products"
+      placeholder="Find the cheapest groceries near you"
+      [value]="query()"
+      (valueChange)="onQuery($event)"
+    />
+    <button type="button" class="location" aria-label="Location, Cork">
+      <mat-icon aria-hidden="true">location_on</mat-icon>
+      <span class="place">Cork</span>
+      <mat-icon class="chevron" aria-hidden="true">expand_more</mat-icon>
+    </button>
+  </header>
+
+  <div class="body">
+    <nav class="nav" aria-label="Primary">
+      <a
+        class="item"
+        routerLink="/home"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">home</mat-icon>
+        <span class="label">Home</span>
+      </a>
+      <a
+        class="item"
+        routerLink="/search"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">search</mat-icon>
+        <span class="label">Search</span>
+      </a>
+      <a
+        class="item"
+        routerLink="/cart"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <span class="icon">
+          <mat-icon aria-hidden="true">shopping_cart</mat-icon>
+          @if (cartCount() > 0) {
+            <span class="badge">{{ cartCount() }}</span>
+          }
+        </span>
+        <span class="label">Cart</span>
+      </a>
+      <a
+        class="item"
+        routerLink="/profile"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <mat-icon aria-hidden="true">person</mat-icon>
+        <span class="label">Profile</span>
+      </a>
+    </nav>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+
+  <app-chat-bubble />
+</div>

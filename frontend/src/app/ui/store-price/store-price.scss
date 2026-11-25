@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 6.5rem;
+  padding: 1.35rem 0.25rem 0.7rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 0.85rem;
+  background: var(--mat-sys-surface);
+  text-align: center;
+}
+
+.tile.cheapest {
+  border-color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface-container);
+}
+
+.badge {
+  position: absolute;
+  top: -0.55rem;
+  left: 50%;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  background: var(--mat-sys-on-surface);
+  color: var(--mat-sys-surface);
+  font: var(--mat-sys-label-small);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.logo {
+  width: 2rem;
+  height: 2rem;
+}
+
+.total {
+  font: var(--mat-sys-title-small);
+  font-weight: 700;
+}
+
+.delta {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-small);
+}
