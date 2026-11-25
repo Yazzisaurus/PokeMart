@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use 'sass:list';
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
@@ -85,18 +86,42 @@ $error: (
   100: #ffffff,
 );
 
-$pokemart-palette: map.merge(
-  $primary,
-  (
-    secondary: $secondary,
-    neutral: $neutral,
-    neutral-variant: $neutral-variant,
-    error: $error,
-  )
+@function reverse-tones($palette) {
+  $keys: map.keys($palette);
+  $count: list.length($keys);
+  $out: ();
+
+  @for $index from 1 through $count {
+    $out: map.set($out, list.nth($keys, $index), map.get($palette, list.nth($keys, $count - $index + 1)));
+  }
+
+  @return $out;
+}
+
+@function palette($primary, $secondary, $neutral, $neutral-variant, $error) {
+  @return map.merge(
+    $primary,
+    (
+      secondary: $secondary,
+      neutral: $neutral,
+      neutral-variant: $neutral-variant,
+      error: $error,
+    )
+  );
+}
+
+$pokemart-palette: palette($primary, $secondary, $neutral, $neutral-variant, $error);
+$pokemart-palette-high-contrast: palette(
+  reverse-tones($primary),
+  reverse-tones($secondary),
+  reverse-tones($neutral),
+  reverse-tones($neutral-variant),
+  reverse-tones($error)
 );
 
 html {
   height: 100%;
+  color-scheme: light;
 
   @include mat.theme(
     (
@@ -125,8 +150,21 @@ html {
   );
 }
 
+html.high-contrast {
+  color-scheme: dark;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: $pokemart-palette-high-contrast,
+        tertiary: $pokemart-palette-high-contrast,
+        theme-type: light,
+      ),
+    )
+  );
+}
+
 body {
-  color-scheme: light;
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);

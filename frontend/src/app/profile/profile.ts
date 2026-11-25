@@ -21,6 +21,7 @@ export class Profile {
   protected readonly remMin = REM_MIN_PX;
   protected readonly remMax = REM_MAX_PX;
   protected readonly remPx = signal(REM_DEFAULT_PX);
+  protected readonly highContrast = signal(false);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     name: [{ value: 'Syed Muhammad Akbar', disabled: true }],
@@ -31,9 +32,11 @@ export class Profile {
   });
 
   constructor() {
-    const stored = this.readRemPx();
-    this.remPx.set(stored);
-    document.documentElement.style.fontSize = `${stored}px`;
+    const stored = this.readSettings();
+    this.remPx.set(stored.remPx);
+    this.highContrast.set(stored.highContrast);
+    document.documentElement.style.fontSize = `${stored.remPx}px`;
+    document.documentElement.classList.toggle('high-contrast', stored.highContrast);
     this.form.controls.password.valueChanges.subscribe(() => {
       this.form.controls.confirmPassword.updateValueAndValidity({ emitEvent: false });
     });
@@ -76,7 +79,14 @@ export class Profile {
     const next = this.clampRemPx(value);
     this.remPx.set(next);
     document.documentElement.style.fontSize = `${next}px`;
-    localStorage.setItem(this.form.controls.email.value, JSON.stringify({ remPx: next }));
+    this.saveSettings();
+  }
+
+  protected setHighContrast(event: Event): void {
+    const next = (event.target as HTMLInputElement).checked;
+    this.highContrast.set(next);
+    document.documentElement.classList.toggle('high-contrast', next);
+    this.saveSettings();
   }
 
   protected startChange(): void {
@@ -109,20 +119,30 @@ export class Profile {
     this.updated.set(true);
   }
 
-  private readRemPx(): number {
+  private readSettings(): { remPx: number; highContrast: boolean } {
+    const stored = { remPx: REM_DEFAULT_PX, highContrast: false };
     const raw = localStorage.getItem(this.form.controls.email.value);
     if (!raw) {
-      return REM_DEFAULT_PX;
+      return stored;
     }
     try {
-      const parsed = Number(JSON.parse(raw).remPx);
-      if (!Number.isFinite(parsed)) {
-        return REM_DEFAULT_PX;
+      const parsed = JSON.parse(raw);
+      const remPx = Number(parsed.remPx);
+      if (Number.isFinite(remPx)) {
+        stored.remPx = this.clampRemPx(remPx);
       }
-      return this.clampRemPx(parsed);
+      stored.highContrast = parsed.highContrast === true;
     } catch {
-      return REM_DEFAULT_PX;
+      return stored;
     }
+    return stored;
+  }
+
+  private saveSettings(): void {
+    localStorage.setItem(
+      this.form.controls.email.value,
+      JSON.stringify({ remPx: this.remPx(), highContrast: this.highContrast() }),
+    );
   }
 
   private clampRemPx(value: number): number {

@@ -55,5 +55,15 @@
         (change)="setRemPx($event)"
       />
     </div>
+    <div class="scale">
+      <label class="scale-label" for="high-contrast">High contrast</label>
+      <input
+        id="high-contrast"
+        class="theme-input"
+        type="checkbox"
+        [checked]="highContrast()"
+        (change)="setHighContrast($event)"
+      />
+    </div>
   </section>
 </section>

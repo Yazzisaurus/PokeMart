@@ -52,6 +52,11 @@
   accent-color: var(--mat-sys-on-surface);
 }
 
+.theme-input {
+  margin-left: auto;
+  accent-color: var(--mat-sys-on-surface);
+}
+
 form {
   display: flex;
   flex-direction: column;
