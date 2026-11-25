@@ -1,20 +1,6 @@
 <section class="screen" aria-label="Profile">
   <div class="title">Profile</div>
 
-  <div class="scale">
-    <label class="scale-label" for="rem-ratio">1 rem = {{ remPx() }} px</label>
-    <input
-      id="rem-ratio"
-      class="scale-input"
-      type="range"
-      [min]="remMin"
-      [max]="remMax"
-      step="1"
-      [value]="remPx()"
-      (change)="setRemPx($event)"
-    />
-  </div>
-
   <form [formGroup]="form" (ngSubmit)="save()" novalidate>
     <app-text-field label="Name" autocomplete="name" [control]="form.controls.name" />
     <app-text-field label="Email" type="email" autocomplete="email" [control]="form.controls.email" />
@@ -51,4 +37,23 @@
       <app-button appearance="text" type="button" (click)="startChange()">Change password</app-button>
     }
   </form>
+
+  <hr class="divider" />
+
+  <section class="section" aria-labelledby="accessibility">
+    <div class="heading" id="accessibility">Accessibility</div>
+    <div class="scale">
+      <label class="scale-label" for="rem-ratio">Zoom control</label>
+      <input
+        id="rem-ratio"
+        class="scale-input"
+        type="range"
+        [min]="remMin"
+        [max]="remMax"
+        step="1"
+        [value]="remPx()"
+        (change)="setRemPx($event)"
+      />
+    </div>
+  </section>
 </section>
