@@ -23,6 +23,24 @@
   font-weight: 700;
 }
 
+.scale {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 14rem;
+}
+
+.scale-label {
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+.scale-input {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--mat-sys-on-surface);
+}
+
 form {
   display: flex;
   flex-direction: column;

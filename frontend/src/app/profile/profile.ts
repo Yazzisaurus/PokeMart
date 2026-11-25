@@ -3,6 +3,10 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { Button } from '../ui/button/button';
 import { TextField } from '../ui/text-field/text-field';
 
+const REM_MIN_PX = 12;
+const REM_MAX_PX = 20;
+const REM_DEFAULT_PX = 16;
+
 @Component({
   selector: 'app-profile',
   imports: [ReactiveFormsModule, Button, TextField],
@@ -14,6 +18,9 @@ export class Profile {
   private readonly submitted = signal(false);
   protected readonly changing = signal(false);
   protected readonly updated = signal(false);
+  protected readonly remMin = REM_MIN_PX;
+  protected readonly remMax = REM_MAX_PX;
+  protected readonly remPx = signal(REM_DEFAULT_PX);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     name: [{ value: 'Syed Muhammad Akbar', disabled: true }],
@@ -24,6 +31,9 @@ export class Profile {
   });
 
   constructor() {
+    const stored = this.readRemPx();
+    this.remPx.set(stored);
+    document.documentElement.style.fontSize = `${stored}px`;
     this.form.controls.password.valueChanges.subscribe(() => {
       this.form.controls.confirmPassword.updateValueAndValidity({ emitEvent: false });
     });
@@ -61,6 +71,14 @@ export class Profile {
     return null;
   }
 
+  protected setRemPx(event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    const next = this.clampRemPx(value);
+    this.remPx.set(next);
+    document.documentElement.style.fontSize = `${next}px`;
+    localStorage.setItem(this.form.controls.email.value, JSON.stringify({ remPx: next }));
+  }
+
   protected startChange(): void {
     this.updated.set(false);
     this.submitted.set(false);
@@ -89,6 +107,26 @@ export class Profile {
     }
     this.cancel();
     this.updated.set(true);
+  }
+
+  private readRemPx(): number {
+    const raw = localStorage.getItem(this.form.controls.email.value);
+    if (!raw) {
+      return REM_DEFAULT_PX;
+    }
+    try {
+      const parsed = Number(JSON.parse(raw).remPx);
+      if (!Number.isFinite(parsed)) {
+        return REM_DEFAULT_PX;
+      }
+      return this.clampRemPx(parsed);
+    } catch {
+      return REM_DEFAULT_PX;
+    }
+  }
+
+  private clampRemPx(value: number): number {
+    return Math.min(REM_MAX_PX, Math.max(REM_MIN_PX, Math.round(value)));
   }
 
   private showError(control: AbstractControl): boolean {
