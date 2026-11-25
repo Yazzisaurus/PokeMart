@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: .github/docker/backend.Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://pokemart:pokemart@postgres:5432/pokemart
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-not-for-production}
+    command: sh -c "npx prisma migrate deploy && node dist/main"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: .github/docker/fastapi.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://pokemart:pokemart@postgres:5432/pokemart
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: .github/docker/frontend.Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
