@@ -1,11 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { accessibilityLimits, readAccessibility, saveAccessibility } from '../core/accessibility';
 import { Button } from '../ui/button/button';
 import { TextField } from '../ui/text-field/text-field';
-
-const REM_MIN_PX = 12;
-const REM_MAX_PX = 20;
-const REM_DEFAULT_PX = 16;
 
 @Component({
   selector: 'app-profile',
@@ -18,9 +15,9 @@ export class Profile {
   private readonly submitted = signal(false);
   protected readonly changing = signal(false);
   protected readonly updated = signal(false);
-  protected readonly remMin = REM_MIN_PX;
-  protected readonly remMax = REM_MAX_PX;
-  protected readonly remPx = signal(REM_DEFAULT_PX);
+  protected readonly remMin = accessibilityLimits.remMin;
+  protected readonly remMax = accessibilityLimits.remMax;
+  protected readonly remPx = signal(accessibilityLimits.remDefault);
   protected readonly highContrast = signal(false);
 
   protected readonly form = this.formBuilder.nonNullable.group({
@@ -32,11 +29,9 @@ export class Profile {
   });
 
   constructor() {
-    const stored = this.readSettings();
+    const stored = readAccessibility();
     this.remPx.set(stored.remPx);
     this.highContrast.set(stored.highContrast);
-    document.documentElement.style.fontSize = `${stored.remPx}px`;
-    document.documentElement.classList.toggle('high-contrast', stored.highContrast);
     this.form.controls.password.valueChanges.subscribe(() => {
       this.form.controls.confirmPassword.updateValueAndValidity({ emitEvent: false });
     });
@@ -76,17 +71,14 @@ export class Profile {
 
   protected setRemPx(event: Event): void {
     const value = Number((event.target as HTMLInputElement).value);
-    const next = this.clampRemPx(value);
-    this.remPx.set(next);
-    document.documentElement.style.fontSize = `${next}px`;
-    this.saveSettings();
+    saveAccessibility({ remPx: value, highContrast: this.highContrast() });
+    this.remPx.set(readAccessibility().remPx);
   }
 
   protected setHighContrast(event: Event): void {
     const next = (event.target as HTMLInputElement).checked;
     this.highContrast.set(next);
-    document.documentElement.classList.toggle('high-contrast', next);
-    this.saveSettings();
+    saveAccessibility({ remPx: this.remPx(), highContrast: next });
   }
 
   protected startChange(): void {
@@ -117,36 +109,6 @@ export class Profile {
     }
     this.cancel();
     this.updated.set(true);
-  }
-
-  private readSettings(): { remPx: number; highContrast: boolean } {
-    const stored = { remPx: REM_DEFAULT_PX, highContrast: false };
-    const raw = localStorage.getItem(this.form.controls.email.value);
-    if (!raw) {
-      return stored;
-    }
-    try {
-      const parsed = JSON.parse(raw);
-      const remPx = Number(parsed.remPx);
-      if (Number.isFinite(remPx)) {
-        stored.remPx = this.clampRemPx(remPx);
-      }
-      stored.highContrast = parsed.highContrast === true;
-    } catch {
-      return stored;
-    }
-    return stored;
-  }
-
-  private saveSettings(): void {
-    localStorage.setItem(
-      this.form.controls.email.value,
-      JSON.stringify({ remPx: this.remPx(), highContrast: this.highContrast() }),
-    );
-  }
-
-  private clampRemPx(value: number): number {
-    return Math.min(REM_MAX_PX, Math.max(REM_MIN_PX, Math.round(value)));
   }
 
   private showError(control: AbstractControl): boolean {
