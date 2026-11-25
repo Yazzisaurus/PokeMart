@@ -46,19 +46,17 @@ async def ask(prompt: str) -> str:
     )
 
 
-async def generate_answer(question: str, records: list[Record]) -> str:
+async def generate_answer(question: str, records: list[Record], history: list[dict[str, str]] | None = None,) -> str:
     """Generate a sentence answer from the retrieved records."""
-    if not records:
-        return "I couldn't find any matching records."
-    return await complete(question, records=records)
+    return await complete(question, records=records, history=history)
 
 
-async def complete(question: str, *, records: list[Record]) -> str:
+async def complete(question: str, *, records: list[Record], history: list[dict[str, str]] | None = None) -> str:
     """Run a chat completion, executing tool calls until the model replies."""
     context = ToolContext(records=records)
     registry = ToolRegistry(context)
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": render_shopping_prompt(records)},
+        {"role": "system", "content": render_shopping_prompt(records)}, *(history or []),
         {"role": "user", "content": question},
     ]
     message: dict[str, Any] = {}

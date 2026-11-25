@@ -3,6 +3,9 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
 import { User } from '../auth/entities/user.entity.js';
+import { Conversation } from '../chat/entities/conversation.entity.js';
+import { Message } from '../chat/entities/message.entity.js';
+import { UserSession } from '../chat/entities/user-session.entity.js';
 import { RawSupermarketRow } from '../ingestion/entities/raw-supermarket-row.entity.js';
 import { PriceObservation } from '../prices/entities/price-observation.entity.js';
 import { CanonicalProduct } from '../products/entities/canonical-product.entity.js';
@@ -26,6 +29,9 @@ export default new DataSource({
     PriceObservation,
     RawSupermarketRow,
     User,
+    UserSession,
+    Conversation,
+    Message,
   ],
 
   migrations: ['src/database/migrations/*{.ts,.js}'],
