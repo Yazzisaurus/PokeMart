@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import httpx
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import ChatRequest, ChatResponse, ConversationOut, MessageOut
@@ -21,6 +22,12 @@ TITLE_LENGTH = 60
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest, db: AsyncSession = Depends(get_db)) -> ChatResponse:
+    try:
+        records = await retrieval.search_products(db, req.message)
+    except (httpx.HTTPStatusError, ProgrammingError):
+        await db.rollback()
+        records = []
+
     if req.conversation_id:
         if not await chat_store.conversation_exists(db, req.conversation_id):
             raise NotFoundError("Conversation not found")
@@ -33,7 +40,6 @@ async def chat(req: ChatRequest, db: AsyncSession = Depends(get_db)) -> ChatResp
         history = []
 
     try:
-        records = await retrieval.search_products(db, req.message)
         reply = await llm.generate_answer(req.message, records, history=history)
     except httpx.RequestError as exc:
         logger.error("cannot reach Ollama: %s", exc)

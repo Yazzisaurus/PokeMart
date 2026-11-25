@@ -48,8 +48,6 @@ async def ask(prompt: str) -> str:
 
 async def generate_answer(question: str, records: list[Record], history: list[dict[str, str]] | None = None,) -> str:
     """Generate a sentence answer from the retrieved records."""
-    if not records:
-        return "I couldn't find any matching records."
     return await complete(question, records=records, history=history)
 
 

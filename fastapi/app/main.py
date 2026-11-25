@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.logger import get_logger
 from app.db.session import close_db, init_db
+from app.services.chat import router as chat_router
 
 logger = get_logger(__name__)
 
@@ -58,3 +59,4 @@ async def unhandled_error_handler(request: Request, exc: Exception) -> JSONRespo
 
 app.include_router(router)
 app.include_router(ai_router)
+app.include_router(chat_router)
